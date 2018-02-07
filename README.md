@@ -4,7 +4,7 @@ U-sir is a programmable search engine and map/reducer. Run it on a single machin
 
 ## HTTP API
 
-Communicate with U-sir through its HTTP API divided into two endpoints: a write and a read service. Run them both on the same machine or separate them.
+Communicate with U-sir through its HTTP API divided into two endpoints: a write and a read service.
 
 ## Writing
 
@@ -12,7 +12,7 @@ Insert and update data by issuing HTTP POST commands to a writer endpoint with a
 
 ### Example of write command that executes the built-in text writer
 
-	HTTP POST http://writernode.company.com/text (text/plain, filename: sales.txt)
+	HTTP POST http://uwrite.company.com/text (text/plain, filename: sales.txt)
 
 The writer will
 
@@ -24,15 +24,19 @@ The writer will
 
 ### Content types
 
-The standard model binder maps media type 'text/plain' to gzipped ASCII delimited text files, i.e. text files with tabular data that separate rows with ASCII character 30 and members of rows with ASCII character 31. 
+Model binders take care of the work needed to add support for a file format. The standard model binder maps to media type `text/plain` and ASCII delimited text files, a type of text files with tabular data. 
 
 #### ASCII delimited text file - special formatting
 
-Encode in UTF-8. On the first row of the file please print column names. On second row print data type names (datetime, integer, decimal, string). Third row should be start of data.
+- On the first row of the file please print column names. 
+- On second row print data type names (datetime, integer, decimal, string). 
+- Third row should be start of data.
+- Separate rows with ASCII character 30 and members of rows with ASCII character 31.
+- Encode in UTF-8. 
 
 #### Other content types
 
-To add support for other content types you may implement your own model binder. It should expose the HTTP request stream to the analyzer as a list of vectors, a tuple for the column labels. 
+To add support for other content types you may implement your own model binder. It should expose the data in the HTTP request stream to the analyzer as a list of vectors, a tuple for the column labels. 
 
 ### Analyzer pipeline
 
@@ -52,4 +56,4 @@ U-sir comes with a full-text search map/reducer built in.
 
 ### Example of search command using the built-in search map/reducer
 
-	HTTP GET http://readnode.company.com/search?q=flights%20from%20copenhagen%20to%20paris
+	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris
