@@ -39,9 +39,14 @@ Example 1: write command
 
 	HTTP GET http://uwrite.company.com text/plain sales.txt
 
-`http://uwrite.company.com` (url)
-`text/plain` (media type)
-`sales.txt` (payload)
+### url
+`http://uwrite.company.com`
+
+### media type
+`text/plain`
+
+### payload
+`sales.txt`
 
 The writer will
 
@@ -58,7 +63,14 @@ Example 2: read command using built-in search procedure
 
 	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris
 
-`http://` (protocol)
-`uwrite.company.com` (host)
-`search` (name of procedure or table)
-`?q=flights%20from%20copenhagen%20to%20paris` (query)
+### protocol
+`http://`
+
+###
+`uwrite.company.com`
+
+### name of procedure or table
+`search`
+
+### query
+`?q=flights%20from%20copenhagen%20to%20paris`
