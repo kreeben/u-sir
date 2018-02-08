@@ -35,22 +35,22 @@ To add support for other content types you may implement your own model binder. 
 
 Insert and update data by issuing HTTP POST commands to a writer endpoint with a data file as the payload.
 
-Example 1: write command
+### Example 1: write command
 
 	HTTP POST http://uwrite.company.com (text/plain, sales.txt)
 
-### Request explained
+#### Request explained
 
-#### Protocol
+##### Protocol
 `http://`
 
-#### Host
+##### Host
 `uwrite.company.com`
 
-#### Content-type
+##### Content-type
 `text/plain`
 
-#### Payload
+##### Payload
 `sales.txt`
 
 ### The writer will
@@ -64,25 +64,25 @@ Example 1: write command
 
 Read data by issuing HTTP GET commands to the read endpoint.
 
-Example 2: read command using built-in search procedure
+### Example 2: read command using built-in search procedure
 
 	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
 
-### Request explained
+#### Request explained
 
-#### Protocol
+##### Protocol
 `http://`
 
-#### Host
+##### Host
 `uwrite.company.com`
 
-#### Name of procedure or table
+##### Name of procedure or table
 `search`
 
-#### Query
+##### Query
 `?q=flights%20from%20copenhagen%20to%20paris`
 
-#### Accept
+##### Accept
 `text/plain`
 
 ### Search map/reduce procedure will
