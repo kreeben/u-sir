@@ -37,7 +37,7 @@ Insert and update data by issuing HTTP POST commands to a writer endpoint with a
 
 Example 1: write command
 
-	HTTP GET http://uwrite.company.com text/plain sales.txt
+	HTTP POST http://uwrite.company.com (text/plain, sales.txt)
 
 #### protocol
 `http://`
@@ -45,7 +45,7 @@ Example 1: write command
 #### host
 `uwrite.company.com`
 
-#### media type
+#### Content-type
 `text/plain`
 
 #### payload
@@ -64,7 +64,7 @@ Read data by issuing HTTP GET commands to the read endpoint.
 
 Example 2: read command using built-in search procedure
 
-	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris
+	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
 
 #### protocol
 `http://`
@@ -77,3 +77,6 @@ Example 2: read command using built-in search procedure
 
 #### query
 `?q=flights%20from%20copenhagen%20to%20paris`
+
+#### Content-type
+`text/plain`
