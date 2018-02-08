@@ -39,6 +39,8 @@ Example 1: write command
 
 	HTTP POST http://uwrite.company.com (text/plain, sales.txt)
 
+### Request configuration
+
 #### Protocol
 `http://`
 
@@ -51,7 +53,7 @@ Example 1: write command
 #### Payload
 `sales.txt`
 
-The writer will
+### The writer will
 
 - append the payload (request stream) to a segment in a log file
 - index the location in the log of each record register their state
@@ -65,6 +67,8 @@ Read data by issuing HTTP GET commands to the read endpoint.
 Example 2: read command using built-in search procedure
 
 	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
+
+### Request configuration
 
 #### Protocol
 `http://`
@@ -81,7 +85,7 @@ Example 2: read command using built-in search procedure
 #### Accept
 `text/plain`
 
-Search map/reduce procedure will
+### Search map/reduce procedure will
 
 - scan index
 - fetch and aggregate result
