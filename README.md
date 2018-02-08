@@ -74,7 +74,7 @@ Read data by issuing HTTP GET commands to the read endpoint.
 `http://`
 
 ##### Host
-`uwrite.company.com`
+`uread.company.com`
 
 ##### Name of procedure or table
 `search`
