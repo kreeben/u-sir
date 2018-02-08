@@ -7,8 +7,7 @@ Features:
 - Programmatically construct stored _map/reduce procedures_ and execute them from any HTTP client. 
 - Configure the write pipeline by creating your own _analyzers_.
 - Add support for your own data formats by authoring _model binders_. 
-- Interface through HTTP API, divided into read and write endpoints, for executing the extendable read and write pipelines. 
-- Support for any type of data format can be added in the form of custom model binders. 
+- Interface through HTTP API, divided into read and write endpoints, for executing the _extendable read and write pipelines_. 
 
 ## Full-text search
 
