@@ -39,7 +39,7 @@ Example 1: write command
 
 	HTTP POST http://uwrite.company.com (text/plain, sales.txt)
 
-### Request configuration
+### Request explained
 
 #### Protocol
 `http://`
@@ -68,7 +68,7 @@ Example 2: read command using built-in search procedure
 
 	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
 
-### Request configuration
+### Request explained
 
 #### Protocol
 `http://`
@@ -89,4 +89,4 @@ Example 2: read command using built-in search procedure
 
 - scan index
 - fetch and aggregate result
-- format the output according to the "Accept" request header.
+- respond with output format corresponding to the "Accept" request header.
