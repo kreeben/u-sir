@@ -39,16 +39,16 @@ Example 1: write command
 
 	HTTP POST http://uwrite.company.com (text/plain, sales.txt)
 
-#### protocol
+#### Protocol
 `http://`
 
-#### host
+#### Host
 `uwrite.company.com`
 
 #### Content-type
 `text/plain`
 
-#### payload
+#### Payload
 `sales.txt`
 
 The writer will
@@ -66,17 +66,17 @@ Example 2: read command using built-in search procedure
 
 	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
 
-#### protocol
+#### Protocol
 `http://`
 
-#### host
+#### Host
 `uwrite.company.com`
 
-#### name of procedure or table
+#### Name of procedure or table
 `search`
 
-#### query
+#### Query
 `?q=flights%20from%20copenhagen%20to%20paris`
 
-#### Content-type
+#### Accept
 `text/plain`
