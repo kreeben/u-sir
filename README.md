@@ -1,10 +1,26 @@
 # U-sir
 
-U-sir is a programmable search engine and map/reducer. Run it on a single machine or on several to distribute load and data.
+U-sir is a data store and map/reducer that consists of _read_, _write_ and _data_ servers which may be run on a single machine or distributed over several.
+
+U-sir has a HTTP API, a programmable read and write pipeline and can support any type of data format through its use of custom model binders.
+
+Main features:
+
+- Construct queries by _programming your own map/reduce procedures_. 
+- Add support for your own data formats by _authoring your own model binders_. 
+- Modify the write pipeline by _creating your own analyzers_.
+
+## Full-text search map/reducer
+
+Out-of-the-box U-sir is configured as a full-text search engine. 
+
+- Map/reducer acts as a index scanner and search results aggregator.
+- Model binder for ASCII character-separated values (text files with values separated by ASCII char 30 and 31).
+- Full-text analyzer registered in the write pipeline that maintains a full-text index and dynamically forms a query vocabulary.
 
 ## HTTP API
 
-Communicate with U-sir through its HTTP API divided into two endpoints: a write and a read service.
+Insert, update, delete and query your data using the HTTP read and write endoints.
 
 ## Writing
 
