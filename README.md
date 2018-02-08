@@ -80,3 +80,9 @@ Example 2: read command using built-in search procedure
 
 #### Accept
 `text/plain`
+
+Search map/reduce procedure will
+
+- scan index
+- fetch and aggregate result
+- format the output according to the "Accept" request header.
