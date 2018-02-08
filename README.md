@@ -2,7 +2,7 @@
 
 U-sir is a map/reducer with read, write and data servers that you may run on a single machine or distribute over a cluster.
 
-__Features__:
+### Features
 
 - Programmatically construct stored __map/reduce procedures__ and execute them from any HTTP client. 
 - Configure the write pipeline by creating your own __analyzers__.
