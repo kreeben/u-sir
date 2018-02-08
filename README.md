@@ -54,7 +54,7 @@ Example 1: write command
 The writer will
 
 - append the payload (request stream) to a segment in a log file
-- index the location in the log of each row of each file and register their state
+- index the location in the log of each record register their state
 - find a model binder mapped to media type 'text/plain' and run it over the request stream to get a model
 - run all registered analyzers (IAnalyzer) over the model
 
