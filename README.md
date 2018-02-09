@@ -1,13 +1,14 @@
 # U-sir
 
-U-sir is a map/reducer with read, write and data servers that you may run on a single machine or distribute over a cluster.
+U-sir is a distributable map/reducer and search engine with programmable read/write pipelines. Access through HTTP and read/write using any file format *. 
+
+* Model binders map between media types and file formats. Add support for any input/output by creating custom model binders and mapping them to a media type.
 
 ### Features
 
-- Programmatically construct stored __map/reduce procedures__ and execute them from any HTTP client. 
+- Programmatically construct stored __map/reduce procedures__. 
+- Create custom __model binders__ to supprt any file format.
 - Configure the write pipeline by creating your own __analyzers__.
-- Add support for your own data formats by authoring __model binders__. 
-- Interface through HTTP API, divided into read and write endpoints, for executing the __extendable read and write pipelines__. 
 
 ## Full-text search
 
@@ -23,7 +24,7 @@ Built into U-sir is a full-text search engine. It consists of a map/reduce proce
 - Lexes, parses and semantically classifies all words.
 - Links classes to table and column names to form a query language vocabulary.
 
-## Content types
+## Media types
 
 Model binders take care of the work needed to add support for a file format. A built-in model binder adds support for ASCII delimited text files, i.e. text files that separates records (rows) with ASCII char 30 ("record separator") and row members with ASCII chars 31 ("unit separator"). First row should include field labels.
 
@@ -37,7 +38,7 @@ Insert and update data by issuing HTTP POST commands to a writer endpoint with a
 
 ### Example 1: write command
 
-	HTTP POST http://uwrite.company.com (text/plain, sales.txt)
+	HTTP POST http://u-sir.company.com (text/plain, sales.txt)
 
 #### Request explained
 
@@ -45,7 +46,7 @@ Insert and update data by issuing HTTP POST commands to a writer endpoint with a
 `http://`
 
 ##### Host
-`uwrite.company.com`
+`u-sir.company.com`
 
 ##### Content-type
 `text/plain`
@@ -66,7 +67,7 @@ Read data by issuing HTTP GET commands to the read endpoint.
 
 ### Example 2: read command using built-in search procedure
 
-	HTTP GET http://uread.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
+	HTTP GET http://u-sir.company.com/search?q=flights%20from%20copenhagen%20to%20paris (text/plain)
 
 #### Request explained
 
@@ -74,9 +75,9 @@ Read data by issuing HTTP GET commands to the read endpoint.
 `http://`
 
 ##### Host
-`uread.company.com`
+`u-sir.company.com`
 
-##### Name of map/reduce procedure
+##### Name of procedure or table
 `search`
 
 ##### Query
