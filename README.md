@@ -76,7 +76,7 @@ Read data by issuing HTTP GET commands to the read endpoint.
 ##### Host
 `uread.company.com`
 
-##### Name of procedure or table
+##### Name of map/reduce procedure
 `search`
 
 ##### Query
