@@ -1,8 +1,8 @@
 # U-sir
 
-U-sir is a distributable map/reducer and search engine with a HTTP API and programmable read/write pipelines. 
+U-sir is a distributable map/reducer and search engine with programmable read/write pipelines. Access through HTTP and read/write using any file format *. 
 
-Read and write data in any format. Model binders map between media types and file formats. Add support for any input/output by creating custom model binders and mapping them to a media type.
+* Model binders map between media types and file formats. Add support for any input/output by creating custom model binders and mapping them to a media type.
 
 ### Features
 
