@@ -23,7 +23,17 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -39,6 +49,7 @@ TestResult.xml
 *.vsp
 *.vspx
 *.sap
+*.pdb
 
 # ReSharper is a .NET coding add-in
 *.[Rr]e[Ss]harper
