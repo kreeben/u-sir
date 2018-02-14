@@ -17,9 +17,29 @@ namespace Sir.HttpServer
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            //return new WebHostBuilder()
+            //.UseKestrel()
+            //.UseContentRoot(Directory.GetCurrentDirectory())
+            //.ConfigureAppConfiguration((builderContext, config) =>
+            //{
+            //    IHostingEnvironment env = builderContext.HostingEnvironment;
+
+            //    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            //        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+            //})
+            //.UseIISIntegration()
+            //.UseStartup<Startup>()
+            //.Build();
+
+
+
+
+
+            return WebHost.CreateDefaultBuilder(args)
+            .UseStartup<Startup>()
+            .Build();
+        }
     }
 }
