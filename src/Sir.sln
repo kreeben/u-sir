@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sir.HttpServer", "Sir.HttpServer\Sir.HttpServer.csproj", "{C94C2F5D-AE55-4157-A74A-26D49EE73E96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sir.ModelBinding", "Sir.ModelBinding\Sir.ModelBinding.csproj", "{3EFC0718-DDFD-4F7D-AFDA-CACCB631B602}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sir.SSTable", "Sir.ModelBinding\Sir.SSTable.csproj", "{3EFC0718-DDFD-4F7D-AFDA-CACCB631B602}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

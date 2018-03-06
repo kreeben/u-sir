@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
@@ -7,33 +8,34 @@ namespace Sir.HttpServer.Controllers
     [Route("write")]
     public class WriteController : Controller
     {
-        private ModelBinderCollection _modelBinders;
+        private WriteActionCollection _writeActions;
 
-        public WriteController(ModelBinderCollection modelBinders)
+        public WriteController(WriteActionCollection writeActions)
         {
-            _modelBinders = modelBinders;
+            _writeActions = writeActions;
         }
 
-        [HttpPost("{*path}")]
-        public IActionResult Post(string path)
+        [HttpPost("{*table}")]
+        public IActionResult Post(string table)
         {
-            var modelBinder = _modelBinders.Get(Request.ContentType);
-
-            if (modelBinder == null)
+            var postActions = _writeActions.Get(Request.ContentType);
+            if (postActions.Count == 0)
             {
-                // HTTP error code 415: media type not supported
+                // Media type not supported
                 return StatusCode(415);
             }
-            
-            var payload = Request.Body;
-            var fileId = string.Format("{0}.{1}", Guid.NewGuid().ToString(), "sir");
-            var fileName = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", fileId);
-
-            using (var fileStream = System.IO.File.Create(fileName))
+            foreach(var action in postActions)
             {
-                payload.CopyTo(fileStream);
+                try
+                {
+                    action.Execute(table, Request.Body);
+                }
+                catch (Exception ew)
+                {
+                    //todo: log
+                    throw ew;
+                }
             }
-
             return StatusCode(200);
         }
     }

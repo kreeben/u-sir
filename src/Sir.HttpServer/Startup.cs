@@ -28,20 +28,20 @@ namespace Sir.HttpServer
             services.AddMvc();
 
             var pluginDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Plugins");
-            var modelBinders = new ModelBinderCollection();
+            var postActions = new WriteActionCollection();
 
             foreach(var file in Directory.GetFiles(pluginDir, "*.dll"))
             {
                 var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(file);
 
-                foreach(var pluginType in assembly.GetTypes().Where(t => typeof(IModelBinder).IsAssignableFrom(t)))
+                foreach(var pluginType in assembly.GetTypes().Where(t => typeof(IWriteAction).IsAssignableFrom(t)))
                 {
-                    var pluginInstance = (IModelBinder)Activator.CreateInstance(pluginType);
-                    modelBinders.Add(pluginInstance.MediaType, pluginInstance);
+                    var pluginInstance = (IWriteAction)Activator.CreateInstance(pluginType);
+                    postActions.Add(pluginInstance.ContentType, pluginInstance);
                 }
             }
 
-            services.AddSingleton(typeof(ModelBinderCollection), modelBinders);
+            services.AddSingleton(typeof(WriteActionCollection), postActions);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
