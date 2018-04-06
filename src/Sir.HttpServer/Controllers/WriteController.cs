@@ -1,6 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
@@ -8,27 +7,44 @@ namespace Sir.HttpServer.Controllers
     [Route("write")]
     public class WriteController : Controller
     {
-        private WriteActionCollection _writeActions;
+        private WriteOperationCollection _writeOperations;
+        private ModelBinderCollection _modelBinders;
 
-        public WriteController(WriteActionCollection writeActions)
+        public WriteController(ModelBinderCollection modelBinders, WriteOperationCollection writeOperations)
         {
-            _writeActions = writeActions;
+            _modelBinders = modelBinders;
+            _writeOperations = writeOperations;
         }
 
-        [HttpPost("{*table}")]
-        public IActionResult Post(string table)
+        [HttpPost("{*id}")]
+        public IActionResult Post(string id)
         {
-            var postActions = _writeActions.Get(Request.ContentType);
-            if (postActions.Count == 0)
+            var modelBinder = _modelBinders.Get(Request.ContentType);
+            var writers = _writeOperations.GetMany(Request.ContentType);
+
+            if (modelBinder == null || writers == null)
             {
                 // Media type not supported
                 return StatusCode(415);
             }
-            foreach(var action in postActions)
+
+            IEnumerable<IModel> data;
+
+            try
+            {
+                data = modelBinder.Bind(Request);
+            }
+            catch (Exception wtf)
+            {
+                //todo: log
+                throw wtf;
+            }
+
+            foreach (var writer in writers)
             {
                 try
                 {
-                    action.Execute(table, Request.Body);
+                    writer.Write(id, data);
                 }
                 catch (Exception ew)
                 {

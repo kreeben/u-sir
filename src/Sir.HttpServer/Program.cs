@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+/// <summary>
+/// http://didyouwhysir.com/
+/// </summary>
 namespace Sir.HttpServer
 {
     public class Program
