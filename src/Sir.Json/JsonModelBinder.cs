@@ -13,7 +13,7 @@ namespace Sir.Json
 
         public IEnumerable<IModel> Bind(HttpRequest request)
         {
-            foreach(var dict in Deserialize(request.Body))
+            foreach (var dict in Deserialize(request.Body))
             {
                 yield return new JsonModel(dict);
             }

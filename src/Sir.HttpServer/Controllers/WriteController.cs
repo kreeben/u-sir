@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
@@ -28,11 +29,11 @@ namespace Sir.HttpServer.Controllers
                 return StatusCode(415);
             }
 
-            IEnumerable<IModel> data;
+            IList<IModel> data;
 
             try
             {
-                data = modelBinder.Bind(Request);
+                data = modelBinder.Bind(Request).ToList();
             }
             catch (Exception wtf)
             {

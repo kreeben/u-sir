@@ -14,6 +14,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sir.HttpServer", "Sir.HttpS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sir.Json", "Sir.Json\Sir.Json.csproj", "{A7DA9278-5C33-4E93-ABF1-31644C2F310A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sir.Store", "Sir.Store\Sir.Store.csproj", "{24E80BBF-27D7-49AB-9C1E-B9EAA2453D38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sir.Index", "Sir.Index\Sir.Index.csproj", "{38A2C5C5-F74E-454D-9D95-AB35549B7EC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{A7DA9278-5C33-4E93-ABF1-31644C2F310A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7DA9278-5C33-4E93-ABF1-31644C2F310A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7DA9278-5C33-4E93-ABF1-31644C2F310A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24E80BBF-27D7-49AB-9C1E-B9EAA2453D38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E80BBF-27D7-49AB-9C1E-B9EAA2453D38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24E80BBF-27D7-49AB-9C1E-B9EAA2453D38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24E80BBF-27D7-49AB-9C1E-B9EAA2453D38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38A2C5C5-F74E-454D-9D95-AB35549B7EC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38A2C5C5-F74E-454D-9D95-AB35549B7EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38A2C5C5-F74E-454D-9D95-AB35549B7EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38A2C5C5-F74E-454D-9D95-AB35549B7EC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

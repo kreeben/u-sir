@@ -22,12 +22,23 @@ namespace Sir
 
         public IEnumerable<IWriteOperation> GetMany(string mediaType)
         {
-            IList<IWriteOperation> actions;
-            if (_services.TryGetValue(mediaType, out actions))
+            IList<IWriteOperation> services;
+
+            if (_services.TryGetValue(mediaType, out services))
             {
-                return actions;
+                foreach (var service in services)
+                {
+                    yield return service;
+                }
             }
-            return null;
+            
+            if (_services.TryGetValue(string.Empty, out services))
+            {
+                foreach (var service in services)
+                {
+                    yield return service;
+                }
+            }
         }
     }
 }
