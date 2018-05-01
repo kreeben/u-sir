@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -12,9 +11,9 @@ namespace Sir.Json
         public string ContentType => "application/json";
         public int Ordinal => 0;
 
-        public IEnumerable<IModel> Bind(HttpRequest request)
+        public IEnumerable<IModel> Deserialize(Stream data)
         {
-            foreach (var dict in Deserialize(request.Body))
+            foreach (var dict in Deserialize(data))
             {
                 yield return new DictionaryModel(dict);
             }

@@ -31,7 +31,7 @@ namespace Sir.HttpServer.Controllers
 
             try
             {
-                data = modelBinder.Bind(Request).ToList();
+                data = modelBinder.Deserialize(Request.Body).ToList();
             }
             catch (Exception wtf)
             {
