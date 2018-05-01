@@ -79,5 +79,27 @@ namespace Sir.Json
                 return JArray.FromObject(obj);
             }
         }
+
+        public void Serialize(IEnumerable<IModel> data, Stream outputStream)
+        {
+            int offset = 0;
+            foreach (var item in data)
+            {
+                var bytes = Serialize(item);
+                outputStream.Write(bytes, offset, bytes.Length);
+                offset += bytes.Length;
+            }
+        }
+
+        private byte[] Serialize(IModel data)
+        {
+            var dict = new Dictionary<string, IComparable>();
+            foreach(var key in data.Keys)
+            {
+                dict.Add(key, data.Get(key));
+            }
+            var json = JsonConvert.SerializeObject(dict, Formatting.None);
+            return System.Text.Encoding.Unicode.GetBytes(json);
+        }
     }
 }
