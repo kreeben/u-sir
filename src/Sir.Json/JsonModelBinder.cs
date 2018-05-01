@@ -10,12 +10,13 @@ namespace Sir.Json
     public class JsonModelBinder : IModelBinder
     {
         public string ContentType => "application/json";
+        public int Ordinal => 0;
 
         public IEnumerable<IModel> Bind(HttpRequest request)
         {
             foreach (var dict in Deserialize(request.Body))
             {
-                yield return new JsonModel(dict);
+                yield return new DictionaryModel(dict);
             }
         }
 

@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Sir.Store
 {
-    public class StoreOperation : IWriteOperation
+    public class StoreWriter : IWriter
     {
         public int Ordinal => 0;
 

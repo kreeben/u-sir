@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sir.Json
+namespace Sir
 {
-    public class JsonModel : IModel
+    public class DictionaryModel : IModel
     {
         private readonly IDictionary<string, IComparable> _dict;
 
-        public JsonModel(IDictionary<string, IComparable> dict)
+        public DictionaryModel(IDictionary<string, IComparable> dict)
         {
             _dict = dict;
         }

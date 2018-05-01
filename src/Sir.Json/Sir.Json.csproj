@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>Sir.Json.plugin</AssemblyName>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) ..\Sir.HttpServer\App_Plugins\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)$(ProjectName).pdb ..\Sir.HttpServer\App_Plugins\$(ProjectName).pdb" />
+    <Exec Command="copy $(TargetPath) ..\Sir.HttpServer\$(OutDir)\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)$(ProjectName).plugin.pdb ..\Sir.HttpServer\$(OutDir)\$(ProjectName).plugin.pdb" />
   </Target>
 
   <ItemGroup>

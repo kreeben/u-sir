@@ -1,43 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
 {
-    [Produces("application/json")]
-    [Route("api/Read")]
     public class ReadController : Controller
     {
-        // GET: api/Read
-        [HttpGet]
-        public IEnumerable<string> Get()
-
+        [HttpGet("read/{*id}")]
+        public HttpResponseMessage Get(string id, string query)
         {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET: api/Read/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
+            var contentType = query == null ? Response.ContentType : "text/plain";
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         }
         
-        // POST: api/Read
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
         
-        // PUT: api/Read/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-        
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

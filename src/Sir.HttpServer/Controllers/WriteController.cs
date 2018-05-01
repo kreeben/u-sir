@@ -8,20 +8,18 @@ namespace Sir.HttpServer.Controllers
     [Route("write")]
     public class WriteController : Controller
     {
-        private WriteOperationCollection _writeOperations;
-        private ModelBinderCollection _modelBinders;
+        private PluginCollection _plugins;
 
-        public WriteController(ModelBinderCollection modelBinders, WriteOperationCollection writeOperations)
+        public WriteController(PluginCollection plugins)
         {
-            _modelBinders = modelBinders;
-            _writeOperations = writeOperations;
+            _plugins = plugins;
         }
 
         [HttpPost("{*id}")]
         public IActionResult Post(string id)
         {
-            var modelBinder = _modelBinders.Get(Request.ContentType);
-            var writers = _writeOperations.GetMany(Request.ContentType);
+            var modelBinder = _plugins.Get<IModelBinder>(Request.ContentType);
+            var writers = _plugins.All<IWriter>(Request.ContentType);
 
             if (modelBinder == null || writers == null)
             {

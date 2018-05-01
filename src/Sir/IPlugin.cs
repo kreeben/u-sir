@@ -1,7 +1,8 @@
 ﻿namespace Sir
 {
-    public interface IHasContentType
+    public interface IPlugin
     {
         string ContentType { get; }
+        int Ordinal { get; }
     }
 }

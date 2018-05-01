@@ -1,6 +1,6 @@
 ﻿namespace Sir
 {
-    public enum SimpleDbType
+    public enum DbTypeId
     {
         String = 0,
         Int32 = 1,

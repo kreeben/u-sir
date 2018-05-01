@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Sir.Index
 {
-    public class IndexOperation : IWriteOperation
+    public class IndexWriter : IWriter
     {
         public int Ordinal => 0;
 

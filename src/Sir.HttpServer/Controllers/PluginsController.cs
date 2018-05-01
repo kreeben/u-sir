@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
@@ -7,11 +8,21 @@ namespace Sir.HttpServer.Controllers
     [Route("plugins")]
     public class PluginsController : Controller
     {
-        private WriteOperationCollection _writeActions;
+        private PluginCollection _writeActions;
 
-        public PluginsController(WriteOperationCollection writeActions)
+        public PluginsController(PluginCollection writeActions)
         {
             _writeActions = writeActions;
+        }
+
+        [HttpGet]
+        public IEnumerable<PluginModel> Get()
+        {
+            return _writeActions.Keys.Select(s => new PluginModel
+            {
+                ContentType = s,
+                Actions = _writeActions.All<IPlugin>(s).Select(a=>a.ContentType)
+            });
         }
 
         public class PluginModel

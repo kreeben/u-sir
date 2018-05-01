@@ -1,61 +1,55 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Loader;
 
 namespace Sir.HttpServer
 {
     public static class PluginFactory
     {
-        public static ModelBinderCollection LoadModelBinders()
+        public static void Configure(IServiceCollection services)
         {
-            var pluginDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Plugins");
-            return LoadModelBinders(pluginDir);
-        }
-
-        public static ModelBinderCollection LoadModelBinders(string pluginDir)
-        {
-            return LoadInstances<ModelBinderCollection, IModelBinder>(pluginDir);
-        }
-
-        public static WriteOperationCollection LoadWriteOperations()
-        {
-            var pluginDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Plugins");
-            return LoadWriteOperations(pluginDir);
-        }
-
-        public static WriteOperationCollection LoadWriteOperations(string pluginDir)
-        {
-            var services = new WriteOperationCollection();
-            foreach (var file in Directory.GetFiles(pluginDir, "*.dll"))
+            var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), "bin\\Release\\netcoreapp2.0");
+#if DEBUG
+            assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), "bin\\Debug\\netcoreapp2.0");
+#endif
+            var plugins = new PluginCollection();
+            foreach (var assembly in Directory.GetFiles(assemblyPath, "*.dll")
+                .Select(file=> AssemblyLoadContext.Default.LoadFromAssemblyPath(file)))
             {
-                var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(file);
-                foreach (var pluginType in assembly.GetTypes()
-                    .Where(t => typeof(IWriteOperation).IsAssignableFrom(t)))
+                foreach (var service in LoadPlugins<IModelBinder>(assembly))
                 {
-                    var pluginInstance = (IWriteOperation)Activator.CreateInstance(pluginType);
-                    services.Add(pluginInstance.ContentType, pluginInstance);
+                    plugins.Add(service.ContentType, service);
+                }
+                foreach (var service in LoadPlugins<IWriter>(assembly))
+                {
+                    plugins.Add(service.ContentType, service);
+                }
+                foreach (var service in LoadPlugins<IQueryParser>(assembly))
+                {
+                    plugins.Add(service.ContentType, service);
                 }
             }
-            return services;
+            services.AddSingleton(typeof(PluginCollection), plugins);
         }
 
-        public static TServiceCollection LoadInstances<TServiceCollection, TTService>(string pluginDir) 
-            where TServiceCollection : ScalarServiceCollection<TTService>, new()
-            where TTService : IHasContentType
+        public static IEnumerable<T> LoadPlugins<T>(Assembly assembly) 
+            where T : IPlugin
         {
-            var services = new TServiceCollection();
-            foreach (var file in Directory.GetFiles(pluginDir, "*.dll"))
+            var type = typeof(T);
+
+            foreach (var pluginType in assembly.GetTypes()
+                    .Where(t => type.IsAssignableFrom(t)))
             {
-                var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(file);
-                foreach (var pluginType in assembly.GetTypes()
-                    .Where(t => typeof(TTService).IsAssignableFrom(t)))
+                if (!pluginType.IsInterface)
                 {
-                    var pluginInstance = (TTService)Activator.CreateInstance(pluginType);
-                    services.Add(pluginInstance.ContentType, pluginInstance);
+                    var pluginInstance = (T)Activator.CreateInstance(pluginType);
+                    yield return pluginInstance;
                 }
             }
-            return services;
         }
     }
 }
