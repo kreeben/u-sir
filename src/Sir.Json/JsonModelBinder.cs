@@ -13,13 +13,13 @@ namespace Sir.Json
 
         public IEnumerable<IModel> Deserialize(Stream data)
         {
-            foreach (var dict in Deserialize(data))
+            foreach (var dict in DeserializeInternal(data))
             {
                 yield return new DictionaryModel(dict);
             }
         }
 
-        private static IList<Dictionary<string, IComparable>> Deserialize(Stream stream)
+        private static IList<Dictionary<string, IComparable>> DeserializeInternal(Stream stream)
         {
             var dicts = new List<Dictionary<string, IComparable>>();
             var tokens = DeserializeIntoTokens(stream);

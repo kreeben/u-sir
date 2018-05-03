@@ -1,4 +1,4 @@
-﻿namespace Sir
+﻿namespace Sir.Index
 {
     public class BooleanKeyValueQueryParser : IQueryParser
     {
