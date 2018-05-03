@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Loader;
 
 namespace Sir.HttpServer
@@ -17,38 +14,52 @@ namespace Sir.HttpServer
             assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), "bin\\Debug\\netcoreapp2.0");
 #endif
             var plugins = new PluginCollection();
-            foreach (var assembly in Directory.GetFiles(assemblyPath, "*.dll")
+
+            foreach (var assembly in Directory.GetFiles(assemblyPath, "*.plugin.dll")
                 .Select(file=> AssemblyLoadContext.Default.LoadFromAssemblyPath(file)))
             {
-                foreach (var service in LoadPlugins<IModelBinder>(assembly))
+                foreach (var type in assembly.GetTypes())
                 {
-                    plugins.Add(service.ContentType, service);
-                }
-                foreach (var service in LoadPlugins<IWriter>(assembly))
-                {
-                    plugins.Add(service.ContentType, service);
-                }
-                foreach (var service in LoadPlugins<IQueryParser>(assembly))
-                {
-                    plugins.Add(service.ContentType, service);
+                    if (!type.IsInterface)
+                    {
+                        var firstInterface = type.GetInterfaces().FirstOrDefault();
+                        var contract = firstInterface ?? type;
+
+                        if (contract == typeof(IModelBinder) ||
+                            contract == typeof(IWriter) ||
+                            contract == typeof(IReader) ||
+                            contract == typeof(IQueryParser))
+                        {
+                            services.Add(new ServiceDescriptor(
+                                contract, type, ServiceLifetime.Singleton));
+                        }
+                        else
+                        {
+                            services.Add(new ServiceDescriptor(
+                                contract, type, ServiceLifetime.Transient));
+                        }
+                    }
                 }
             }
-            services.AddSingleton(typeof(PluginCollection), plugins);
-        }
+            services.Add(new ServiceDescriptor(typeof(PluginCollection), plugins));
 
-        public static IEnumerable<T> LoadPlugins<T>(Assembly assembly) 
-            where T : IPlugin
-        {
-            var type = typeof(T);
+            var serviceProvider = services.BuildServiceProvider();
 
-            foreach (var pluginType in assembly.GetTypes()
-                    .Where(t => type.IsAssignableFrom(t)))
+            foreach (var service in serviceProvider.GetServices<IModelBinder>())
             {
-                if (!pluginType.IsInterface)
-                {
-                    var pluginInstance = (T)Activator.CreateInstance(pluginType);
-                    yield return pluginInstance;
-                }
+                plugins.Add(service.ContentType, service);
+            }
+            foreach (var service in serviceProvider.GetServices<IWriter>())
+            {
+                plugins.Add(service.ContentType, service);
+            }
+            foreach (var service in serviceProvider.GetServices<IReader>())
+            {
+                plugins.Add(service.ContentType, service);
+            }
+            foreach (var service in serviceProvider.GetServices<IQueryParser>())
+            {
+                plugins.Add(service.ContentType, service);
             }
         }
     }

@@ -24,7 +24,12 @@ namespace Sir
             {
                 _services[key].Add(t, new List<IPlugin>());
             }
-            _services[key][t].Insert(service.Ordinal, service);
+            var list = _services[key][t];
+            while (service.Ordinal > list.Count)
+            {
+                list.Add(null);
+            }
+            list.Insert(service.Ordinal, service);
         }
 
         public IEnumerable<string> Keys { get { return _services.Keys; } }
@@ -57,7 +62,8 @@ namespace Sir
                 {
                     foreach(var p in plugins)
                     {
-                        yield return (T)p;
+                        if (p != null)
+                            yield return (T)p;
                     }
                 }
             }
