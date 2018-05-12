@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
 namespace Sir.HttpServer
 {
@@ -21,6 +22,7 @@ namespace Sir.HttpServer
                 options.RespectBrowserAcceptHeader = true;
             });
             PluginFactory.Configure(services);
+            Directory.SetCurrentDirectory(Path.Combine(Directory.GetCurrentDirectory(), "App_Data"));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

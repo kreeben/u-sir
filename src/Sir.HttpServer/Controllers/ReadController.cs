@@ -33,7 +33,7 @@ namespace Sir.HttpServer.Controllers
             }
 
             var queryParser = _plugins.Get<IQueryParser>(contentType);
-            var modelBinder = _plugins.Get<IModelBinder>(accepts);
+            var modelBinder = _plugins.Get<IModelParser>(accepts);
             var reader = _plugins.Get<IReader>(accepts);
 
             if (queryParser == null || modelBinder == null || reader == null)

@@ -4,6 +4,6 @@ namespace Sir
 {
     public interface IWriter : IPlugin
     {
-        void Write(string id, IEnumerable<IModel> data);
+        void Write(string collectionId, IEnumerable<IModel> data);
     }
 }

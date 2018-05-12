@@ -3,31 +3,44 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sir.Json
 {
-    public class JsonModelBinder : IModelBinder
+    public class JsonParser : IModelParser
     {
         public string ContentType => "application/json";
-        public int Ordinal => 0;
 
-        public IEnumerable<IModel> Deserialize(Stream data)
+        public IList<IModel> Parse(Stream data)
         {
-            foreach (var dict in DeserializeInternal(data))
+            return ParseIterator(data).ToList();
+        }
+
+        private IEnumerable<IModel> ParseIterator(Stream data)
+        {
+            foreach (var dict in Deserialize(data))
             {
-                yield return new DictionaryModel(dict);
+                var keys = dict.Keys.ToArray();
+                var values = new IComparable[keys.Length];
+
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    values[i] = dict[keys[i]];
+                }
+
+                yield return new Model(keys, values);
             }
         }
 
-        private static IList<Dictionary<string, IComparable>> DeserializeInternal(Stream stream)
+        private static IList<IDictionary<string, IComparable>> Deserialize(Stream stream)
         {
-            var dicts = new List<Dictionary<string, IComparable>>();
+            var dicts = new List<IDictionary<string, IComparable>>();
             var tokens = DeserializeIntoTokens(stream);
 
             foreach (var token in tokens)
             {
-                var dict = new Dictionary<string, IComparable>();
-                FillDictionaryFromJToken(dict, token, string.Empty);
+                var dict = new SortedDictionary<string, IComparable>();
+                Flatten(dict, token, string.Empty);
                 dicts.Add(dict);
             }
 
@@ -37,14 +50,14 @@ namespace Sir.Json
         /// <summary>
         /// https://stackoverflow.com/a/32800161/46645
         /// </summary>
-        private static void FillDictionaryFromJToken(Dictionary<string, IComparable> dict, JToken token, string prefix)
+        private static void Flatten(IDictionary<string, IComparable> dict, JToken token, string prefix)
         {
             switch (token.Type)
             {
                 case JTokenType.Object:
                     foreach (JProperty prop in token.Children<JProperty>())
                     {
-                        FillDictionaryFromJToken(dict, prop.Value, Join(prefix, prop.Name));
+                        Flatten(dict, prop.Value, Join(prefix, prop.Name));
                     }
                     break;
 
@@ -52,7 +65,7 @@ namespace Sir.Json
                     int index = 0;
                     foreach (JToken value in token.Children())
                     {
-                        FillDictionaryFromJToken(dict, value, Join(prefix, index.ToString()));
+                        Flatten(dict, value, Join(prefix, index.ToString()));
                         index++;
                     }
                     break;
@@ -79,26 +92,8 @@ namespace Sir.Json
             }
         }
 
-        public void Serialize(IEnumerable<IModel> data, Stream outputStream)
+        public void Dispose()
         {
-            int offset = 0;
-            foreach (var item in data)
-            {
-                var bytes = Serialize(item);
-                outputStream.Write(bytes, offset, bytes.Length);
-                offset += bytes.Length;
-            }
-        }
-
-        private byte[] Serialize(IModel data)
-        {
-            var dict = new Dictionary<string, IComparable>();
-            foreach(var key in data.Keys)
-            {
-                dict.Add(key, data.Get(key));
-            }
-            var json = JsonConvert.SerializeObject(dict, Formatting.None);
-            return System.Text.Encoding.Unicode.GetBytes(json);
         }
     }
 }

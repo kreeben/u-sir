@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
@@ -15,27 +15,30 @@ namespace Sir.HttpServer.Controllers
             _plugins = plugins;
         }
 
-        [HttpPost("{*id}")]
-        public IActionResult Post(string id)
+        [HttpPost("{*collectionId}")]
+        public async Task<IActionResult> Post(string collectionId)
         {
-            var modelBinder = _plugins.Get<IModelBinder>(Request.ContentType);
+            if (string.IsNullOrWhiteSpace(collectionId))
+            {
+                throw new ArgumentException("message", nameof(collectionId));
+            }
+
+            var modelParser = _plugins.Get<IModelParser>(Request.ContentType);
             var writers = _plugins.All<IWriter>(Request.ContentType);
 
-            if (modelBinder == null || writers == null)
+            if (modelParser == null || writers == null)
             {
-                // Media type not supported
-                return StatusCode(415);
+                return StatusCode(415); // Media type not supported
             }
 
             IList<IModel> data;
 
             try
             {
-                data = modelBinder.Deserialize(Request.Body).ToList();
+                data = modelParser.Parse(Request.Body);
             }
             catch (Exception wtf)
             {
-                //todo: log
                 throw wtf;
             }
 
@@ -43,15 +46,20 @@ namespace Sir.HttpServer.Controllers
             {
                 try
                 {
-                    writer.Write(id, data);
+                    await Task.Run(() =>
+                    {
+                        writer.Write(collectionId, data);
+                    });
                 }
                 catch (Exception ew)
                 {
-                    //todo: log
                     throw ew;
                 }
             }
-            return StatusCode(200);
+            Response.Headers.Add(
+                "Location", new Microsoft.Extensions.Primitives.StringValues("/read/" + id));
+
+            return StatusCode(201); // Created
         }
     }
 }

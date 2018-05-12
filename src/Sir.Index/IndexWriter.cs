@@ -4,11 +4,13 @@ namespace Sir.Index
 {
     public class IndexWriter : IWriter
     {
-        public int Ordinal => 1;
-
         public string ContentType => string.Empty;
 
-        public void Write(string id, IEnumerable<IModel> data)
+        public void Write(string collectionId, IEnumerable<IModel> data)
+        {
+        }
+
+        public void Dispose()
         {
         }
     }

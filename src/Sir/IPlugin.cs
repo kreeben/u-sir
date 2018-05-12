@@ -1,8 +1,9 @@
-﻿namespace Sir
+﻿using System;
+
+namespace Sir
 {
-    public interface IPlugin
+    public interface IPlugin : IDisposable
     {
         string ContentType { get; }
-        int Ordinal { get; }
     }
 }

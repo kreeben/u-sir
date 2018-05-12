@@ -10,7 +10,7 @@ namespace Sir.Store
         public string ContentType => string.Empty;
         public int Ordinal => 0;
 
-        public Stream Read(string id, IModelBinder modelBinder, Query query = null)
+        public Stream Read(string id, IModelParser modelBinder, Query query = null)
         {
             throw new NotImplementedException();
         }

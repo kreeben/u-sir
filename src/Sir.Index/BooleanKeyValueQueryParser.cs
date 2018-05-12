@@ -5,6 +5,10 @@
         public string ContentType => "text/plain";
         public int Ordinal => 0;
 
+        public void Dispose()
+        {
+        }
+
         public Query Parse(string query)
         {
             var tokens = query.Split(new[] { ' ', ':' });

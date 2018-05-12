@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Sir
 {
-    public class PluginCollection
+    public class PluginCollection : IDisposable
     {
         private readonly IDictionary<string, IDictionary<Type, IList<IPlugin>>> _services;
 
@@ -25,11 +25,7 @@ namespace Sir
                 _services[key].Add(t, new List<IPlugin>());
             }
             var list = _services[key][t];
-            while (service.Ordinal > list.Count)
-            {
-                list.Add(null);
-            }
-            list.Insert(service.Ordinal, service);
+            list.Add(service);
         }
 
         public IEnumerable<string> Keys { get { return _services.Keys; } }
@@ -67,6 +63,21 @@ namespace Sir
                     }
                 }
             }
+        }
+
+        ~PluginCollection()
+        {
+            if (_services.Count > 0)
+                Dispose();
+        }
+
+        public void Dispose()
+        {
+            foreach(var s in _services.Values.SelectMany(x => x.Values.SelectMany(y => y)))
+            {
+                s.Dispose();
+            }
+            _services.Clear();
         }
     }
 }

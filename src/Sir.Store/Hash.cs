@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Sir
+namespace Sir.Store
 {
     public static class Hash
     {

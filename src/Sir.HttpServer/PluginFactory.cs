@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Loader;
@@ -13,8 +14,6 @@ namespace Sir.HttpServer
 #if DEBUG
             assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), "bin\\Debug\\netcoreapp2.0");
 #endif
-            var plugins = new PluginCollection();
-
             foreach (var assembly in Directory.GetFiles(assemblyPath, "*.plugin.dll")
                 .Select(file=> AssemblyLoadContext.Default.LoadFromAssemblyPath(file)))
             {
@@ -22,30 +21,34 @@ namespace Sir.HttpServer
                 {
                     if (!type.IsInterface)
                     {
-                        var firstInterface = type.GetInterfaces().FirstOrDefault();
+                        var interfaces = type.GetInterfaces();
+                        var firstInterface = interfaces.FirstOrDefault();
                         var contract = firstInterface ?? type;
+                        var lastInterface = interfaces.LastOrDefault() ?? contract;
 
-                        if (contract == typeof(IModelBinder) ||
-                            contract == typeof(IWriter) ||
-                            contract == typeof(IReader) ||
-                            contract == typeof(IQueryParser))
+                        if (lastInterface == typeof(IPlugin))
                         {
                             services.Add(new ServiceDescriptor(
                                 contract, type, ServiceLifetime.Singleton));
                         }
-                        else
+                        else if (lastInterface == typeof(IPluginConfiguration))
                         {
-                            services.Add(new ServiceDescriptor(
-                                contract, type, ServiceLifetime.Transient));
+                            Activator.CreateInstance<IPluginConfiguration>().Configure(services);
                         }
                     }
                 }
             }
-            services.Add(new ServiceDescriptor(typeof(PluginCollection), plugins));
+
+            services.Add(new ServiceDescriptor(typeof(PluginCollection), new PluginCollection()));
 
             var serviceProvider = services.BuildServiceProvider();
+            var plugins = serviceProvider.GetService<PluginCollection>();
 
-            foreach (var service in serviceProvider.GetServices<IModelBinder>())
+            foreach (var service in serviceProvider.GetServices<IModelParser>())
+            {
+                plugins.Add(service.ContentType, service);
+            }
+            foreach (var service in serviceProvider.GetServices<IModelFormatter>())
             {
                 plugins.Add(service.ContentType, service);
             }
