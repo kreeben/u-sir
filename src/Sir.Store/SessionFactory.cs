@@ -5,29 +5,35 @@ using System.Linq;
 
 namespace Sir.Store
 {
-    public class StreamProviderFactory : IDisposable
+    public class SessionFactory : IDisposable
     {
         private readonly IDictionary<string, Stream> _streams;
 
-        public StreamProvider CreateWriteStreamProvider(ulong collectionId)
+        public Session CreateWriteSession(ulong collectionId)
         {
-            return new StreamProvider
+            return new Session
             {
-                IndexStream = GetWriteStream(string.Format("{0}.dix", collectionId)),
                 ValueStream = GetWriteStream(string.Format("{0}.val", collectionId)),
                 KeyStream = GetWriteStream(string.Format("{0}.key", collectionId)),
-                KeyDictionaryStream = GetWriteStream(string.Format("{0}.kdic", collectionId))
+                DocStream = GetWriteStream(string.Format("{0}.doc", collectionId)),
+                ValueIndexStream = GetWriteStream(string.Format("{0}.vix", collectionId)),
+                KeyIndexStream = GetWriteStream(string.Format("{0}.kix", collectionId)),
+                DocIndexStream = GetWriteStream(string.Format("{0}.dix", collectionId)),
+                PostingsStream = GetWriteStream(string.Format("{0}.pos", collectionId))
             };
         }
 
-        public StreamProvider CreateReadStreamProvider(ulong collectionId)
+        public Session CreateReadSession(ulong collectionId)
         {
-            return new StreamProvider
+            return new Session
             {
-                IndexStream = GetReadStream(string.Format("{0}.dix", collectionId)),
                 ValueStream = GetReadStream(string.Format("{0}.val", collectionId)),
                 KeyStream = GetReadStream(string.Format("{0}.key", collectionId)),
-                KeyDictionaryStream = GetReadStream(string.Format("{0}.kdic", collectionId))
+                DocStream = GetReadStream(string.Format("{0}.doc", collectionId)),
+                ValueIndexStream = GetWriteStream(string.Format("{0}.vix", collectionId)),
+                KeyIndexStream = GetWriteStream(string.Format("{0}.kix", collectionId)),
+                DocIndexStream = GetWriteStream(string.Format("{0}.dix", collectionId)),
+                PostingsStream = GetReadStream(string.Format("{0}.pos", collectionId))
             };
         }
 
@@ -65,7 +71,7 @@ namespace Sir.Store
             }
         }
 
-        ~StreamProviderFactory()
+        ~SessionFactory()
         {
             if (_streams.Count > 0)
                 Dispose();

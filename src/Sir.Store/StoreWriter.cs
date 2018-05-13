@@ -13,9 +13,9 @@ namespace Sir.Store
         public string ContentType => string.Empty;
 
         private readonly BlockingCollection<WriteTransaction> _writeQueue;
-        private readonly StreamProviderFactory _streamProviderFactory;
+        private readonly SessionFactory _streamProviderFactory;
 
-        public StoreWriter(StreamProviderFactory streamProviderFactory)
+        public StoreWriter(SessionFactory streamProviderFactory)
         {
             _streamProviderFactory = streamProviderFactory;
             _writeQueue = new BlockingCollection<WriteTransaction>();
@@ -45,6 +45,8 @@ namespace Sir.Store
             {
                 _writeQueue.Add(tx);
             }
+            DateTime.Now.Kind
+            //todo: log request async in a timestamped collection
         }
 
         private void Commit(WriteTransaction tx)
@@ -57,7 +59,7 @@ namespace Sir.Store
             tx.Committed = true;
         }
 
-        private (long keyOffset, int keyLength) Write(IModel model, StreamProvider streamProvider)
+        private (long keyOffset, int keyLength) Write(IModel model, Session streamProvider)
         {
             var ix = new byte[model.Keys.Length][];
 

@@ -1,35 +1,37 @@
 # Sir.Store
 
-Sir.Store is a document storage engine. Documents have strings for keys and ´IComparable´ for values.
-
-Read, update and delete operations can be issued on single or multiple records by specifying a key/value filter.
+Document storage engine.
 
 ## File format
 
-### collection_hash.pos
-
-	doc_id doc_id doc_id...
-
-### collection_hash.val
+### .val
 
 	val val val... 
 
-### collection_hash.key
+### .key
 
 	key key key... 
 
-### collection_hash.vix
+### .doc
 
-	(val_id) val_type val_len pos_offset pos_len
+	key_id val_id...
 
-### collection_hash.map
+### .vix
 
-	key_id val_id 
+	(val_id) val_offset val_len val_type
 
-### collection_hash.dix
-
-	(doc_id) map_offset map_len 
-
-### collection_hash.pix
+### .kix
 
 	(key_id) key_offset key_len
+
+### .dix
+
+	(doc_id) doc_offset doc_len
+
+### .ix
+
+	keyval_hash/pos_offset pos_len
+
+### .pos
+
+	doc_id doc_id doc_id...
