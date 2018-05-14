@@ -21,7 +21,7 @@ namespace Sir.Store
             _stream.Write(BitConverter.GetBytes(offset), 0, sizeof(long));
             _stream.Write(BitConverter.GetBytes(len), 0, sizeof(int));
 
-            return i + _blockSize;
+            return i;
         }
     }
 }

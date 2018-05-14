@@ -26,14 +26,14 @@ namespace Sir.HttpServer
                         var contract = firstInterface ?? type;
                         var lastInterface = interfaces.LastOrDefault() ?? contract;
 
-                        if (lastInterface == typeof(IPlugin))
+                        if (interfaces.Contains(typeof(IPlugin)))
                         {
                             services.Add(new ServiceDescriptor(
                                 contract, type, ServiceLifetime.Singleton));
                         }
-                        else if (lastInterface == typeof(IPluginStart))
+                        else if (interfaces.Contains(typeof(IPluginStart)))
                         {
-                            Activator.CreateInstance<IPluginStart>().OnApplicationStartup(services);
+                            ((IPluginStart)Activator.CreateInstance(type)).OnApplicationStartup(services);
                         }
                     }
                 }

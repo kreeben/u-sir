@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace Sir.Store
 {
@@ -58,18 +59,28 @@ namespace Sir.Store
                 {
                     if (!_ixs.TryGetValue(fileName, out tree))
                     {
-                        var options = new BPlusTree<uint, byte[]>.OptionsV2(
-                            PrimitiveSerializer.UInt32, new BytesSerializer());
-
-                        options.FileName = fileName;
-                        options.CreateFile = CreatePolicy.IfNeeded;
-
-                        tree = new BPlusTree<uint, byte[]>(options);
+                        tree = CreateTree(Path.Combine(Directory.GetCurrentDirectory(), fileName));
                         _ixs.Add(fileName, tree);
                     }
                 }
             }
             return tree;
+        }
+
+        private static BPlusTree<uint, byte[]> CreateTree(string fileName)
+        {
+            if (!File.Exists(fileName))
+            {
+                File.Copy(Path.Combine(Directory.GetCurrentDirectory(), "_.ix"), fileName);
+            }
+
+            var options = new BPlusTree<uint, byte[]>.OptionsV2(PrimitiveSerializer.UInt32, new BytesSerializer());
+
+            options.CalcBTreeOrder(32, 128);
+            options.FileName = fileName;
+            options.CreateFile = CreatePolicy.Never;
+
+            return new BPlusTree<uint, byte[]>(options);
         }
 
         private Stream GetReadWriteStream(string fileName)
