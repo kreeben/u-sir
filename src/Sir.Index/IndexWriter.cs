@@ -6,7 +6,7 @@ namespace Sir.Index
     {
         public string ContentType => string.Empty;
 
-        public void Write(string collectionId, IEnumerable<IModel> data)
+        public void Append(string collectionId, IEnumerable<IModel> data)
         {
         }
 

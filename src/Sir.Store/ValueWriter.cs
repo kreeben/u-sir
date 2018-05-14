@@ -3,9 +3,16 @@ using System.IO;
 
 namespace Sir.Store
 {
-    public static class StoreSerializer
+    public class ValueWriter
     {
-        public static (long offset, int len, byte dataType) Serialize(IComparable value, Stream stream)
+        private readonly Stream _stream;
+
+        public ValueWriter(Stream stream)
+        {
+            _stream = stream;
+        }
+
+        public (long offset, int len, byte dataType) Append(IComparable value)
         {
             byte[] buffer;
             byte dataType = 0;
@@ -51,8 +58,8 @@ namespace Sir.Store
                 dataType = DataType.STRING;
             }
 
-            var offset = stream.Position;
-            stream.Write(buffer, 0, buffer.Length);
+            var offset = _stream.Position;
+            _stream.Write(buffer, 0, buffer.Length);
             return (offset, buffer.Length, dataType);
         }
     }

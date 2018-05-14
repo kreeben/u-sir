@@ -4,7 +4,7 @@ namespace Sir
 {
     public interface IModel
     {
-        string[] Keys { get; }
+        IComparable[] Keys { get; }
         IComparable[] Values { get; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Sir.Index
+﻿namespace Sir.Store
 {
     public class BooleanKeyValueQueryParser : IQueryParser
     {

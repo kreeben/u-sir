@@ -1,6 +1,6 @@
 # Sir.Store
 
-Document storage engine.
+Document storage engine. Keys and values are IComparable.
 
 ## File format
 
@@ -22,16 +22,16 @@ Document storage engine.
 
 ### .kix
 
-	(key_id) key_offset key_len
+	(key_id) key_offset key_len key_type
 
 ### .dix
 
 	(doc_id) doc_offset doc_len
 
-### .ix
-
-	keyval_hash/pos_offset pos_len
-
 ### .pos
 
-	doc_id doc_id doc_id...
+	[doc_id doc_id next_page_offset] [doc_id       ]...
+
+### .ix
+
+	keyval_bin/key_id val_id pos_offset

@@ -27,7 +27,7 @@ namespace Sir
             var dict = new Dictionary<string, IComparable>();
             for (int i = 0; i < data.Keys.Length; i++)
             {
-                var key = data.Keys[i];
+                var key = (string)data.Keys[i];
                 if (key != "_id")
                     dict.Add(key, data.Values[i]);
             }

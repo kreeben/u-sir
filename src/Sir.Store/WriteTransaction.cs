@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Sir
+namespace Sir.Store
 {
     public class WriteTransaction : IDisposable
     {

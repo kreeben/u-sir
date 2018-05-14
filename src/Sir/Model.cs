@@ -4,13 +4,13 @@ namespace Sir.Json
 {
     public class Model : IModel
     {
-        public Model(string[] keys, IComparable[] values)
+        public Model(IComparable[] keys, IComparable[] values)
         {
             Keys = keys;
             Values = values;
         }
 
-        public string[] Keys { get; }
+        public IComparable[] Keys { get; }
 
         public IComparable[] Values { get; }
     }

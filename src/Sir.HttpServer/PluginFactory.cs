@@ -31,9 +31,9 @@ namespace Sir.HttpServer
                             services.Add(new ServiceDescriptor(
                                 contract, type, ServiceLifetime.Singleton));
                         }
-                        else if (lastInterface == typeof(IPluginConfiguration))
+                        else if (lastInterface == typeof(IPluginStart))
                         {
-                            Activator.CreateInstance<IPluginConfiguration>().Configure(services);
+                            Activator.CreateInstance<IPluginStart>().OnApplicationStartup(services);
                         }
                     }
                 }

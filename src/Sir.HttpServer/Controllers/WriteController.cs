@@ -48,7 +48,7 @@ namespace Sir.HttpServer.Controllers
                 {
                     await Task.Run(() =>
                     {
-                        writer.Write(collectionId, data);
+                        writer.Append(collectionId, data);
                     });
                 }
                 catch (Exception ew)
@@ -57,7 +57,7 @@ namespace Sir.HttpServer.Controllers
                 }
             }
             Response.Headers.Add(
-                "Location", new Microsoft.Extensions.Primitives.StringValues("/read/" + id));
+                "Location", new Microsoft.Extensions.Primitives.StringValues("/read/" + collectionId));
 
             return StatusCode(201); // Created
         }
