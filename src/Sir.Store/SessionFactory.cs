@@ -1,6 +1,4 @@
-﻿using CSharpTest.Net.Collections;
-using CSharpTest.Net.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,8 +9,10 @@ namespace Sir.Store
     public class SessionFactory : IDisposable
     {
         private readonly IDictionary<string, Stream> _streams;
-        private readonly IDictionary<string, BPlusTree<uint, byte[]>> _ixs;
+        private readonly IDictionary<ulong, IDictionary<ulong, byte[]>> _ixs;
         private readonly object Sync = new object();
+
+        public bool IsDisposed { get; private set; }
 
         public SessionFactory()
         {
@@ -30,7 +30,7 @@ namespace Sir.Store
                 DocStream = GetAppendStream(string.Format("{0}.doc", collectionId)),
                 ValueIndexStream = GetAppendStream(string.Format("{0}.vix", collectionId)),
                 KeyIndexStream = GetAppendStream(string.Format("{0}.kix", collectionId)),
-                DocIndexStream = GetAppendStream(string.Format("{0}.dix", collectionId)),
+                DocIndexStream = GetReadWriteStream(string.Format("{0}.dix", collectionId)),
                 PostingsStream = GetReadWriteStream(string.Format("{0}.pos", collectionId)),
             };
         }
@@ -40,45 +40,41 @@ namespace Sir.Store
             return new Session
             {
                 Index = GetIndex(string.Format("{0}.ix", collectionId)),
-                ValueStream = GetReadStream(string.Format("{0}.val", collectionId)),
-                KeyStream = GetReadStream(string.Format("{0}.key", collectionId)),
-                DocStream = GetReadStream(string.Format("{0}.doc", collectionId)),
+                ValueStream = CreateReadStream(string.Format("{0}.val", collectionId)),
+                KeyStream = CreateReadStream(string.Format("{0}.key", collectionId)),
+                DocStream = CreateReadStream(string.Format("{0}.doc", collectionId)),
                 ValueIndexStream = GetAppendStream(string.Format("{0}.vix", collectionId)),
                 KeyIndexStream = GetAppendStream(string.Format("{0}.kix", collectionId)),
                 DocIndexStream = GetAppendStream(string.Format("{0}.dix", collectionId)),
-                PostingsStream = GetReadStream(string.Format("{0}.pos", collectionId))
+                PostingsStream = CreateReadStream(string.Format("{0}.pos", collectionId))
             };
         }
 
-        private BPlusTree<uint, byte[]> GetIndex(string fileName)
+        private IDictionary<uint, byte[]> GetIndex(string fileName)
         {
-            BPlusTree<uint, byte[]> tree;
-            if (!_ixs.TryGetValue(fileName, out tree))
-            {
-                lock (Sync)
-                {
-                    if (!_ixs.TryGetValue(fileName, out tree))
-                    {
-                        tree = CreateTree(Path.Combine(Directory.GetCurrentDirectory(), fileName));
-                        _ixs.Add(fileName, tree);
-                    }
-                }
-            }
-            return tree;
+            //BPlusTree<uint, byte[]> tree;
+            //if (!_ixs.TryGetValue(fileName, out tree))
+            //{
+            //    lock (Sync)
+            //    {
+            //        if (!_ixs.TryGetValue(fileName, out tree))
+            //        {
+            //            tree = CreateTree(Path.Combine(Directory.GetCurrentDirectory(), fileName));
+            //            _ixs.Add(fileName, tree);
+            //        }
+            //    }
+            //}
+            //return tree;
+            return CreateTree(Path.Combine(Directory.GetCurrentDirectory(), fileName));
         }
 
-        private static BPlusTree<uint, byte[]> CreateTree(string fileName)
+        private static IDictionary<uint, byte[]> CreateTree(string fileName)
         {
-            if (!File.Exists(fileName))
-            {
-                File.Copy(Path.Combine(Directory.GetCurrentDirectory(), "_.ix"), fileName);
-            }
-
             var options = new BPlusTree<uint, byte[]>.OptionsV2(PrimitiveSerializer.UInt32, new BytesSerializer());
 
             options.CalcBTreeOrder(32, 128);
             options.FileName = fileName;
-            options.CreateFile = CreatePolicy.Never;
+            options.CreateFile = CreatePolicy.IfNeeded;
 
             return new BPlusTree<uint, byte[]>(options);
         }
@@ -122,7 +118,7 @@ namespace Sir.Store
             return stream;
         }
 
-        private Stream GetReadStream(string fileName)
+        private Stream CreateReadStream(string fileName)
         {
             if (File.Exists(fileName))
             {
@@ -133,17 +129,25 @@ namespace Sir.Store
 
         public void Dispose()
         {
-            foreach (var s in _streams.ToList())
+            if (!IsDisposed)
             {
-                s.Value.Dispose();
-                _streams.Remove(s.Key);
+                // cleanup
+                foreach (var s in _streams.ToList())
+                {
+                    if (s.Value != null) s.Value.Dispose();
+                }
+
+                foreach (var ix in _ixs.ToList())
+                {
+                    if (ix.Value != null) ix.Value.Dispose();
+                }
+                IsDisposed = true;
             }
         }
 
         ~SessionFactory()
         {
-            if (_streams.Count > 0)
-                Dispose();
+            Dispose();
         }
     }
 }

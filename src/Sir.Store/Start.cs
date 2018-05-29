@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Sir.Store
 {
@@ -7,6 +8,15 @@ namespace Sir.Store
         public void OnApplicationStartup(IServiceCollection services)
         {
             services.AddSingleton(typeof(SessionFactory), new SessionFactory());
+        }
+    }
+
+    public class Stop : IPluginStop
+    {
+        public void OnApplicationShutdown(IServiceProvider serviceProvider)
+        {
+            var sessionFactory = serviceProvider.GetService<SessionFactory>();
+            sessionFactory.Dispose();
         }
     }
 }

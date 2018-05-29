@@ -1,10 +1,11 @@
-﻿using CSharpTest.Net.Collections;
-using System;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Sir.Store
 {
-    public class Session
+    public class Session : IDisposable
     {
         public BPlusTree<uint, byte[]> Index { get; set; }
         public Stream ValueStream { get; set; }
@@ -60,5 +61,11 @@ namespace Sir.Store
 
             Index.Add(term, buf);
         }
+
+        public void Dispose()
+        {
+            Index.Dispose();
+        }
     }
+
 }

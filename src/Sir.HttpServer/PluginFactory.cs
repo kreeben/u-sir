@@ -8,7 +8,7 @@ namespace Sir.HttpServer
 {
     public static class PluginFactory
     {
-        public static void Configure(IServiceCollection services)
+        public static IServiceProvider Configure(IServiceCollection services)
         {
             var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), "bin\\Release\\netcoreapp2.0");
 #if DEBUG
@@ -34,6 +34,11 @@ namespace Sir.HttpServer
                         else if (interfaces.Contains(typeof(IPluginStart)))
                         {
                             ((IPluginStart)Activator.CreateInstance(type)).OnApplicationStartup(services);
+                        }
+                        else if (interfaces.Contains(typeof(IPluginStop)))
+                        {
+                            services.Add(new ServiceDescriptor(
+                                contract, type, ServiceLifetime.Singleton));
                         }
                     }
                 }
@@ -64,6 +69,8 @@ namespace Sir.HttpServer
             {
                 plugins.Add(service.ContentType, service);
             }
+
+            return serviceProvider;
         }
     }
 }

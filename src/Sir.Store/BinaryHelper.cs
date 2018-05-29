@@ -1,38 +1,61 @@
 ﻿using System;
+using System.Linq;
 
 namespace Sir.Store
 {
     public static class BinaryHelper
     {
-        public static uint ToBinary(this IComparable value)
+        public static ulong To64BitTerm(IComparable key, IComparable value)
         {
-            if (value is string)
+            if (value is decimal)
             {
-                return ((string)value).ToLowerInvariant().ToDotProductOfSelf();
+                throw new NotSupportedException("128-bit words not allowed");
             }
-            else if (value is DateTime)
+
+            return Dot(ConvertToString(key).ToArray(), ConvertToString(value).ToArray());
+        }
+
+        private static string ConvertToString(IComparable comparable)
+        {
+            if (comparable is string)
             {
-                return ((DateTime)value).ToDotProductOfSelf();
+                return (string)comparable;
+            }
+            else if (comparable is DateTime)
+            {
+                return ((DateTime)comparable).ToBinary().ToString();
             }
             else
             {
-                return Convert.ToUInt32(value);
+                return comparable.ToString();
             }
         }
 
-        public static uint ToDotProductOfSelf(this string text)
+        private static ulong Dot(char[] sparse1, char[] sparse2)
         {
-            uint result = 0;
-            for (int i = 0; i < text.Length; i++)
+            char[] longest, shortest;
+            ulong result = 0;
+
+            if (sparse1.Length > sparse2.Length)
             {
-                result += (uint)text[i] * text[i];
+                longest = sparse1;
+                shortest = sparse2;
             }
-            return result;
-        }
+            else
+            {
+                longest = sparse2;
+                shortest = sparse1;
+            }
+            
+            for (int i = 0; i < longest.Length; i++)
+            {
+                var x = longest[i];
+                var y = shortest.Length <= i ? char.MinValue : shortest[i];
+                result += (uint)x * y;
+            }
 
-        public static uint ToDotProductOfSelf(this DateTime when)
-        {
-            return ((uint)when.Kind*(uint)when.Ticks);
+            return result;
         }
     }
 }
+

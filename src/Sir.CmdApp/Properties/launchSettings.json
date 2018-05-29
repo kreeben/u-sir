@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Sir.CmdApp": {
+      "commandName": "Project",
+      "commandLineArgs": "add apa ipa ipy zebra bengt"
+    }
+  }
+}

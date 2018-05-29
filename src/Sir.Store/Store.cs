@@ -13,6 +13,8 @@ namespace Sir.Store
         private readonly BlockingCollection<WriteTransaction> _writeQueue;
         private readonly SessionFactory _sessionFactory;
 
+        public bool IsDisposed { get; private set; }
+
         public Store(SessionFactory sessionFactory)
         {
             _sessionFactory = sessionFactory;
@@ -39,7 +41,7 @@ namespace Sir.Store
 
         public void Append(string collectionId, IEnumerable<IModel> data)
         {
-            using (var tx = new WriteTransaction(BinaryHelper.ToBinary(collectionId), data))
+            using (var tx = new WriteTransaction(BinaryHelper.To64BitBinary(collectionId), data))
             {
                 _writeQueue.Add(tx);
             }
@@ -47,15 +49,14 @@ namespace Sir.Store
 
         private void Commit(WriteTransaction tx)
         {
-            var session = _sessionFactory.CreateWriteSession(tx.CollectionId);
-            foreach (var model in tx.Data)
+            using (var session = _sessionFactory.CreateWriteSession(tx.CollectionId))
             {
-                Write(model, session);
+                Write(tx.Data, session);                
             }
             tx.Committed = true;
         }
 
-        private void Write(IModel model, Session session)
+        private void Write(IEnumerable<IModel> data, Session session)
         {
             var vals = new ValueWriter(session.ValueStream);
             var keys = new ValueWriter(session.KeyStream);
@@ -65,47 +66,68 @@ namespace Sir.Store
             var docIx = new DocIndexWriter(session.DocIndexStream);
             var postings = new PostingsWriter(session.PostingsStream);
             var docMapping = new List<(uint keyId, uint valId)>();
-            var terms = new List<uint>();
+            var docTerms = new List<uint>();
 
-            for (int i = 0; i < model.Keys.Length; i++)
+            foreach (var model in data)
             {
-                uint term = model.Keys[i].ToBinary() * model.Values[i].ToBinary();
-                uint keyId, valId;
-                long posOffset;
-
-                if (!session.TryGet(term, out keyId, out valId, out posOffset))
+                for (int i = 0; i < model.Keys.Length; i++)
                 {
-                    var valMeta = vals.Append(model.Values[i]);
-                    valId = valIx.Append(valMeta.offset, valMeta.len, valMeta.dataType);
+                    ulong term = BinaryHelper.To64BitTerm(model.Keys[i], model.Values[i]);
+                    uint keyId, valId;
+                    long posOffset;
 
-                    var keyMeta = keys.Append(model.Values[i]);
-                    keyId = keyIx.Append(keyMeta.offset, keyMeta.len, keyMeta.dataType);
+                    if (!session.TryGet(term, out keyId, out valId, out posOffset))
+                    {
+                        // We have found a new unique term!
 
-                    posOffset = postings.AllocatePage();
-                    session.Add(term, keyId, valId, posOffset);
+                        // store value
+                        var valMeta = vals.Append(model.Values[i]);
+                        valId = valIx.Append(valMeta.offset, valMeta.len, valMeta.dataType);
+
+                        // store key
+                        var keyMeta = keys.Append(model.Values[i]);
+                        keyId = keyIx.Append(keyMeta.offset, keyMeta.len, keyMeta.dataType);
+
+                        // allocate space on disk for postings
+                        posOffset = postings.AllocatePage();
+
+                        // add term to index
+                        session.Add(term, keyId, valId, posOffset);
+                    }
+                    docMapping.Add((keyId, valId));
+                    docTerms.Add(term);
                 }
-                docMapping.Add((keyId, valId));
-                terms.Add(term);
-            }
 
-            var docMeta = docs.Append(docMapping);
-            var docId = docIx.Append(docMeta.offset, docMeta.length);
+                var docMeta = docs.Append(docMapping);
+                var docId = docIx.Append(docMeta.offset, docMeta.length);
 
-            foreach (var term in terms)
-            {
-                var postingMeta = session.Get(term);
-                postings.Append(postingMeta.posOffset, docId);
+                foreach (var term in docTerms)
+                {
+                    var postingMeta = session.Get(term);
+                    postings.Append(postingMeta.posOffset, docId);
+                }
             }
         }
 
         public void Dispose()
         {
-            _writeQueue.CompleteAdding();
-            while (!_writeQueue.IsCompleted)
+            if (!IsDisposed)
             {
-                Thread.Sleep(10);
+                // cleanup
+                _writeQueue.CompleteAdding();
+                while (!_writeQueue.IsCompleted)
+                {
+                    Thread.Sleep(10);
+                }
+                _writeQueue.Dispose();
+
+                IsDisposed = true;
             }
-            _writeQueue.Dispose();
+        }
+
+        ~Store()
+        {
+            Dispose();
         }
     }
 }

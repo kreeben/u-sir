@@ -1,6 +1,6 @@
 # Sir.Store
 
-Document storage engine. Keys and values are IComparable.
+In-process document database. Keys and values are IComparable.
 
 ## File format
 
@@ -34,4 +34,4 @@ Document storage engine. Keys and values are IComparable.
 
 ### .ix
 
-	keyval_bin/key_id val_id pos_offset
+	(keyval_dot)/key_id val_id pos_offset

@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpTest.Net.Collections" Version="14.906.1403.1082" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
   </ItemGroup>
 
@@ -15,7 +14,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) ..\Sir.HttpServer\$(OutDir)\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)$(ProjectName).plugin.pdb ..\Sir.HttpServer\$(OutDir)\$(ProjectName).plugin.pdb" />
+    <Exec Command="copy $(TargetPath) ..\Sir.HttpServer\$(OutDir)\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)$(ProjectName).plugin.pdb ..\Sir.HttpServer\$(OutDir)\$(ProjectName).plugin.pdb&#xD;&#xA;copy $(TargetDir)CSharpTest.Net.Collections.dll ..\Sir.HttpServer\$(OutDir)\CSharpTest.Net.Collections.dll" />
   </Target>
 
 </Project>
