@@ -36,11 +36,7 @@ namespace Sir.CmdApp
 
                     timer.Stop();
 
-                    var edges = tree.ToList();
-                    foreach (var edge in edges)
-                    {
-                        Console.WriteLine(edge);
-                    }
+                    Console.WriteLine(tree.Visualize());
                 }
                 else if (input[0] == "find" && input.Length > 1)
                 {
@@ -52,8 +48,8 @@ namespace Sir.CmdApp
 
                     if (result != null)
                     {
-                        foreach (var edge in result)
-                            Console.WriteLine(edge);
+                        Console.WriteLine(result.Visualize());
+                        Console.WriteLine(result.EdgeToParent);
                     }
                 }
 
@@ -72,12 +68,12 @@ namespace Sir.CmdApp
             }
         }
 
-        private static IList<WordEdge> Find(string input, WordNode tree)
+        private static WordNode Find(string input, WordNode tree)
         {
             var result = new List<string>();
             var word = new WordNode(input);
-            var closest = tree.FindClosestTangent(word);
-            return closest == null ? null : closest.ToList();
+            var closest = tree.FirstTangent(word);
+            return closest;
         }
     }
 }

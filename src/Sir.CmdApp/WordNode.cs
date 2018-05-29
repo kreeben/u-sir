@@ -7,10 +7,16 @@ namespace Sir.CmdApp
 {
     public class WordNode
     {
+        private const double MERGE_ANGLE = 0.9d;
+
         private WordEdge right;
         private WordEdge left;
 
+        public WordEdge EdgeToParent { get; set; }
+        
+
         private SortedList<char, int> wordVector;
+
 
         public WordNode(string s)
         {
@@ -22,7 +28,7 @@ namespace Sir.CmdApp
             this.wordVector = wordVector;
         }
 
-        public WordNode FindClosestTangent(WordNode node)
+        public WordNode FirstTangent(WordNode node)
         {
             var angle = GetAngle(wordVector, node.wordVector);
 
@@ -30,27 +36,76 @@ namespace Sir.CmdApp
             {
                 if (left != null)
                 {
-                    return left.Node.FindClosestTangent(node);
+                    return left.Node.FirstTangent(node);
                 }
                 else if (right != null)
                 {
-                    return right.Node.FindClosestTangent(node);
+                    return right.Node.FirstTangent(node);
                 }
             }
             return this;
         }
 
+        public WordNode ClosestMatch(WordNode node)
+        {
+            var tangent = FirstTangent(node);
+            var angle = GetAngle(node.wordVector, tangent.wordVector);
+            var highestAngle = angle;
+            var winner = tangent;
+
+            foreach(var t in tangent.AllLeft())
+            {
+                angle = GetAngle(node.wordVector, t.Node.wordVector);
+
+                if (angle == 0)
+                {
+                    break;
+                }
+                else if (angle > highestAngle)
+                {
+                    highestAngle = angle;
+                    winner = tangent;
+                }
+            }
+
+            //foreach (var t in tangent.AllRight())
+            //{
+            //    angle = GetAngle(node.wordVector, t.Node.wordVector);
+
+            //    if (angle == 0)
+            //    {
+            //        break;
+            //    }
+            //    else if (angle > highestAngle)
+            //    {
+            //        highestAngle = angle;
+            //        winner = tangent;
+            //    }
+            //}
+
+            return winner;
+        }
+
+        public void Merge(SortedList<char, int> vector)
+        {
+            wordVector = Add(wordVector, vector);
+            EdgeToParent.Angle = GetAngle(wordVector, vector);
+        }
+
         public void Add(WordNode node)
         {
-            var tangent = FindClosestTangent(node);
+            var tangent = ClosestMatch(node);
             var angle = GetAngle(node.wordVector, tangent.wordVector);
 
-            if (angle == 0)
+            if (angle >= MERGE_ANGLE)
+            {
+                tangent.Merge(node.wordVector);
+            }
+            else if (angle == 0)
             {
                 if (tangent.right == null)
                 {
-                    // insert
-                    tangent.right = new WordEdge(node, this, angle);
+                    tangent.right = new WordEdge(node, tangent, angle);
                 }
                 else
                 {
@@ -59,17 +114,14 @@ namespace Sir.CmdApp
             }
             else
             {
+                
                 if (tangent.left == null)
                 {
-                    // insert
                     tangent.left = new WordEdge(node, tangent, angle);
                 }
                 else
                 {
-                    // v1+v2
-                    var resultant = Add(node.wordVector, tangent.left.Node.wordVector);
-                    var a = GetAngle(tangent.wordVector, resultant);
-                    tangent.left = new WordEdge(new WordNode(resultant), tangent, a);
+                    tangent.left.Node.Add(node);
                 }
             }
         }
@@ -244,6 +296,61 @@ namespace Sir.CmdApp
                     yield return x;
                 }
             }
+        }
+
+        public IEnumerable<WordEdge> AllLeft()
+        {
+            if (left != null)
+            {
+                yield return left;
+
+                foreach (var x in left.Node.All())
+                {
+                    yield return x;
+                }
+            }
+        }
+
+        public IEnumerable<WordEdge> AllRight()
+        {
+            if (right != null)
+            {
+                yield return right;
+
+                foreach (var x in right.Node.All())
+                {
+                    yield return x;
+                }
+            }
+        }
+
+        public string Visualize()
+        {
+            StringBuilder output = new StringBuilder();
+            Visualize(this, output, 0);
+            return output.ToString();
+        }
+
+        private void Visualize(WordNode node, StringBuilder output, int depth)
+        {
+            if (node == null) return;
+
+            double angleToParent = 0;
+
+            if (node.EdgeToParent != null)
+            {
+                angleToParent = node.EdgeToParent.Angle;
+            }
+
+            output.Append('\t', depth);
+            output.AppendFormat(".{0} ({1})", node.ToString(), angleToParent);
+            output.AppendLine();
+
+            if (node.left != null)
+                Visualize(node.left.Node, output, depth + 1);
+
+            if (node.right != null)
+                Visualize(node.right.Node, output, depth);
         }
     }
 }
