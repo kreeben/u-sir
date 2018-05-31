@@ -46,9 +46,12 @@ namespace Sir.CmdApp
 
                     timer.Stop();
 
-                    if (result != null)
+                    if (result == null)
                     {
-                        Console.WriteLine(result.Visualize());
+                        Console.WriteLine("not found");
+                    }
+                    else
+                    {
                         Console.WriteLine(result.EdgeToParent);
                     }
                 }
@@ -72,7 +75,7 @@ namespace Sir.CmdApp
         {
             var result = new List<string>();
             var word = new WordNode(input);
-            var closest = tree.FirstTangent(word);
+            var closest = tree.ClosestMatch(word);
             return closest;
         }
     }

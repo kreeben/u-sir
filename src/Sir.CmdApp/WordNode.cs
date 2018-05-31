@@ -53,35 +53,16 @@ namespace Sir.CmdApp
             var highestAngle = angle;
             var winner = tangent;
 
-            foreach(var t in tangent.AllLeft())
+            foreach(var t in tangent.All())
             {
                 angle = GetAngle(node.wordVector, t.Node.wordVector);
 
-                if (angle == 0)
-                {
-                    break;
-                }
-                else if (angle > highestAngle)
+                if (angle > highestAngle)
                 {
                     highestAngle = angle;
-                    winner = tangent;
+                    winner = t.Node;
                 }
             }
-
-            //foreach (var t in tangent.AllRight())
-            //{
-            //    angle = GetAngle(node.wordVector, t.Node.wordVector);
-
-            //    if (angle == 0)
-            //    {
-            //        break;
-            //    }
-            //    else if (angle > highestAngle)
-            //    {
-            //        highestAngle = angle;
-            //        winner = tangent;
-            //    }
-            //}
 
             return winner;
         }
@@ -292,19 +273,6 @@ namespace Sir.CmdApp
                 yield return right;
 
                 foreach (var x in right.Node.All())
-                {
-                    yield return x;
-                }
-            }
-        }
-
-        public IEnumerable<WordEdge> AllLeft()
-        {
-            if (left != null)
-            {
-                yield return left;
-
-                foreach (var x in left.Node.All())
                 {
                     yield return x;
                 }
