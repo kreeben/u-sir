@@ -41,7 +41,7 @@ namespace Sir.Store
 
         public void Append(string collectionId, IEnumerable<IModel> data)
         {
-            using (var tx = new WriteTransaction(BinaryHelper.To64BitBinary(collectionId), data))
+            using (var tx = new WriteTransaction(collectionId.ToHash(), data))
             {
                 _writeQueue.Add(tx);
             }

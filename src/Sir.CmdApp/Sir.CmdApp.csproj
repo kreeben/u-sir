@@ -3,6 +3,13 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>Sir</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="YesNoParser">
+      <HintPath>..\..\..\yesnoparser\src\YesNoParser\bin\Debug\netcoreapp2.0\YesNoParser.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>

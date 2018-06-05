@@ -1,295 +1,127 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Sir.CmdApp
+namespace Sir.Store
 {
     public class WordNode
     {
-        private const double MERGE_ANGLE = 0.9d;
+        public const double TRUE_ANGLE = 0.9d;
+        public const double FALSE_ANGLE = 0.2d;
+        public SortedList<char, int> WordVector { get; private set; }
 
-        private WordEdge right;
-        private WordEdge left;
+        public WordNode Ancestor { get; set; }
+        public WordNode Right { get; set; }
+        public WordNode Left { get; set; }
+        public double Angle { get; set; }
 
-        public WordEdge EdgeToParent { get; set; }
-        
-
-        private SortedList<char, int> wordVector;
-
-
-        public WordNode(string s)
+        public WordNode(string s):this(s.ToVector())
         {
-            wordVector = ToSparseCharacterVector(s);
         }
 
         public WordNode(SortedList<char, int> wordVector)
         {
-            this.wordVector = wordVector;
+            this.WordVector = wordVector;
         }
-
-        public WordNode FirstTangent(WordNode node)
-        {
-            var angle = GetAngle(wordVector, node.wordVector);
-
-            if (angle == 0)
-            {
-                if (left != null)
-                {
-                    return left.Node.FirstTangent(node);
-                }
-                else if (right != null)
-                {
-                    return right.Node.FirstTangent(node);
-                }
-            }
-            return this;
-        }
-
+        
         public WordNode ClosestMatch(WordNode node)
         {
-            var tangent = FirstTangent(node);
-            var angle = GetAngle(node.wordVector, tangent.wordVector);
-            var highestAngle = angle;
-            var winner = tangent;
+            var winner = this;
+            var cursor = this;
+            double highscore = 0;
 
-            foreach(var t in tangent.All())
+            while (cursor != null)
             {
-                angle = GetAngle(node.wordVector, t.Node.wordVector);
-
-                if (angle > highestAngle)
+                var angle = node.WordVector.CosAngle(cursor.WordVector);
+                if (angle >= TRUE_ANGLE)
                 {
-                    highestAngle = angle;
-                    winner = t.Node;
+                    return cursor;
                 }
-            }
-
-            return winner;
-        }
-
-        public void Merge(SortedList<char, int> vector)
-        {
-            wordVector = Add(wordVector, vector);
-            EdgeToParent.Angle = GetAngle(wordVector, vector);
-        }
-
-        public void Add(WordNode node)
-        {
-            var tangent = ClosestMatch(node);
-            var angle = GetAngle(node.wordVector, tangent.wordVector);
-
-            if (angle >= MERGE_ANGLE)
-            {
-                tangent.Merge(node.wordVector);
-            }
-            else if (angle == 0)
-            {
-                if (tangent.right == null)
+                else if (angle > FALSE_ANGLE)
                 {
-                    tangent.right = new WordEdge(node, tangent, angle);
+                    if (angle > highscore)
+                    {
+                        highscore = angle;
+                        winner = cursor;
+                    }
+                    cursor = cursor.Left;
                 }
                 else
                 {
-                    tangent.right.Node.Add(node);
+                    cursor = cursor.Right;
+                }
+            }
+            return winner;
+        }
+
+        public bool Add(WordNode node)
+        {
+            node.Angle = node.WordVector.CosAngle(WordVector);
+
+            if (node.Angle >= TRUE_ANGLE)
+            {
+                Merge(node);
+                return false;
+            }
+            else if (node.Angle <= FALSE_ANGLE)
+            {
+                if (Right == null)
+                {
+                    Right = node;
+                    Right.Ancestor = this;
+                    return true;
+                }
+                else
+                {
+                    return Right.ClosestMatch(node).Add(node);
                 }
             }
             else
             {
-                
-                if (tangent.left == null)
+                if (Left == null)
                 {
-                    tangent.left = new WordEdge(node, tangent, angle);
+                    Left = node;
+                    node.Ancestor = this;
+                    return true;
                 }
                 else
                 {
-                    tangent.left.Node.Add(node);
+                    return Left.ClosestMatch(node).Add(node);
                 }
             }
         }
 
-        public static double GetAngle(SortedList<char, int> vec1, SortedList<char, int> vec2)
+        private WordNode GetRoot()
         {
-            return Dot(vec1, vec2) / (Math.Sqrt(Dot(vec1, vec1)) * Math.Sqrt(Dot(vec2, vec2)));
-        }
-
-        public static long Dot(SortedList<char, int> vec1, SortedList<char, int> vec2)
-        {
-            long product = 0;
-            var cursor1 = 0;
-            var cursor2 = 0;
-
-            while (cursor1 < vec1.Count && cursor2 < vec2.Count)
+            var cursor = this;
+            while (cursor != null)
             {
-                var p1 = vec1.Keys[cursor1];
-                var p2 = vec2.Keys[cursor2];
-
-                if (p2 > p1)
-                {
-                    cursor1++;
-                }
-                else if (p1 > p2)
-                {
-                    cursor2++;
-                }
-                else
-                {
-                    product += vec1[p1] * vec2[p2];
-                    cursor1++;
-                    cursor2++;
-                }
+                if (cursor.Ancestor == null) break;
+                cursor = cursor.Ancestor;
             }
-            return product;
+            return cursor;
         }
 
-        public static SortedList<char, int> Subtract(SortedList<char, int> vec1, SortedList<char, int> vec2)
+        //private void Detach()
+        //{
+        //    if (ReferenceEquals(Ancestor.Left, this))
+        //    {
+        //        Ancestor.Left = Left;
+        //        if (Ancestor.Left != null) Ancestor.Left.Ancestor = Ancestor;
+        //    }
+        //    else if (ReferenceEquals(Ancestor.Right, this))
+        //    {
+        //        Ancestor.Right = Right;
+        //        if (Ancestor.Right != null) Ancestor.Right.Ancestor = Ancestor;
+        //    }
+        //}
+
+        public void Merge(WordNode node)
         {
-            var result = new SortedList<char, int>();
-            var cursor1 = 0;
-            var cursor2 = 0;
-
-            while (cursor1 < vec1.Count || cursor2 < vec2.Count)
-            {
-                char? p1 = null;
-                char? p2 = null;
-
-                if (cursor1 < vec1.Count)
-                {
-                    p1 = vec1.Keys[cursor1];
-                }
-                if (cursor2 < vec2.Count)
-                {
-                    p2 = vec2.Keys[cursor2];
-                }
-
-                if ((p2.HasValue && p1.HasValue && p2.Value > p1.Value) || (p2.HasValue == false && p1.HasValue))
-                {
-                    result[p1.Value] = 0 - vec1[p1.Value];
-                    cursor1++;
-                }
-                else if ((p2.HasValue && p1.HasValue && p2.Value < p1.Value) || (p1.HasValue == false && p2.HasValue))
-                {
-                    result[p2.Value] = 0 - vec2[p2.Value];
-                    cursor2++;
-                }
-                else
-                {
-                    result[p1.Value] = vec1[p1.Value] - vec2[p2.Value];
-                    cursor1++;
-                    cursor2++;
-                }
-            }
-            return result;
-        }
-
-        public static SortedList<char, int> Add(SortedList<char, int> vec1, SortedList<char, int> vec2)
-        {
-            var result = new SortedList<char, int>();
-            var cursor1 = 0;
-            var cursor2 = 0;
-
-            while (cursor1 < vec1.Count || cursor2 < vec2.Count)
-            {
-                char? p1 = null;
-                char? p2 = null;
-
-                if (cursor1 < vec1.Count)
-                {
-                    p1 = vec1.Keys[cursor1];
-                }
-                if (cursor2 < vec2.Count)
-                {
-                    p2 = vec2.Keys[cursor2];
-                }
-
-                if ((p2.HasValue && p1.HasValue && p2.Value > p1.Value) || (p2.HasValue == false && p1.HasValue))
-                {
-                    result[p1.Value] = vec1[p1.Value];
-                    cursor1++;
-                }
-                else if ((p2.HasValue && p1.HasValue && p2.Value < p1.Value) || (p1.HasValue == false && p2.HasValue))
-                {
-                    result[p2.Value] = vec2[p2.Value];
-                    cursor2++;
-                }
-                else
-                {
-                    result[p1.Value] = vec1[p1.Value] + vec2[p2.Value];
-                    cursor1++;
-                    cursor2++;
-                }
-            }
-            return result;
-        }
-
-        public static SortedList<char, int> ToSparseCharacterVector(string word)
-        {
-            var frequencies = new SortedList<char, int>();
-
-            for (int i = 0; i < word.Length; i++)
-            {
-                var c = word[i];
-                int f;
-                if (frequencies.TryGetValue(c, out f))
-                {
-                    f++;
-                }
-                else
-                {
-                    f = 1;
-                }
-                frequencies[c] = f;
-            }
-            return frequencies;
-        }
-
-        public override string ToString()
-        {
-            var w = new StringBuilder();
-            foreach (var c in wordVector)
-            {
-                w.Append(c.Key);
-            }
-            return w.ToString();
-        }
-
-        public IList<WordEdge> ToList()
-        {
-            return All().ToList();
-        }
-
-        public IEnumerable<WordEdge> All()
-        {
-            if (left != null)
-            {
-                yield return left;
-
-                foreach (var x in left.Node.All())
-                {
-                    yield return x;
-                }
-            }
-            if (right != null)
-            {
-                yield return right;
-
-                foreach (var x in right.Node.All())
-                {
-                    yield return x;
-                }
-            }
-        }
-
-        public IEnumerable<WordEdge> AllRight()
-        {
-            if (right != null)
-            {
-                yield return right;
-
-                foreach (var x in right.Node.All())
-                {
-                    yield return x;
-                }
-            }
+            //WordVector = WordVector.Add(node.WordVector);
+            //Angle = WordVector.CosAngle(Ancestor.WordVector);
         }
 
         public string Visualize()
@@ -303,22 +135,32 @@ namespace Sir.CmdApp
         {
             if (node == null) return;
 
-            double angleToParent = 0;
+            double angle = 0;
 
-            if (node.EdgeToParent != null)
+            if (node.Ancestor != null)
             {
-                angleToParent = node.EdgeToParent.Angle;
+                angle = node.Angle;
             }
 
             output.Append('\t', depth);
-            output.AppendFormat(".{0} ({1})", node.ToString(), angleToParent);
+            output.AppendFormat(".{0} ({1})", node.ToString(), angle);
             output.AppendLine();
 
-            if (node.left != null)
-                Visualize(node.left.Node, output, depth + 1);
+            if (node.Left != null)
+                Visualize(node.Left, output, depth + 1);
 
-            if (node.right != null)
-                Visualize(node.right.Node, output, depth);
+            if (node.Right != null)
+                Visualize(node.Right, output, depth);
+        }
+
+        public override string ToString()
+        {
+            var w = new StringBuilder();
+            foreach (var c in WordVector)
+            {
+                w.Append(c.Key);
+            }
+            return w.ToString();
         }
     }
 }

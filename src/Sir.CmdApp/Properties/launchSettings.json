@@ -2,7 +2,7 @@
   "profiles": {
     "Sir.CmdApp": {
       "commandName": "Project",
-      "commandLineArgs": "add apa ipa ipy zebra bengt"
+      "commandLineArgs": "add_file c:\\temp *.html"
     }
   }
 }
