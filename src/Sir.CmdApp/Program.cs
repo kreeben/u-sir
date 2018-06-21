@@ -36,6 +36,7 @@ namespace Sir.CmdApp
                     timer.Stop();
                     Console.WriteLine(tree.Visualize());
                     Console.WriteLine("count: {0}", tree.Count);
+                    Console.WriteLine("merges: {0}", tree.MergeCount);
                 }
                 else if (input[0] == "add_file" && input.Length == 3)
                 {
@@ -53,6 +54,7 @@ namespace Sir.CmdApp
 
                     Console.WriteLine(tree.Visualize());
                     Console.WriteLine("count: {0}", tree.Count);
+                    Console.WriteLine("merges: {0}", tree.MergeCount);
                 }
                 else if (input[0] == "add")
                 {
@@ -74,10 +76,10 @@ namespace Sir.CmdApp
                         }
                         else
                         {
-                            Console.Write("{0} {1} ", result, result.Angle);
+                            Console.WriteLine("{0} {1} ", result, result.Highscore);
                             var sb = new StringBuilder();
                             var cursor = result.Ancestor;
-                            while(cursor != null)
+                            while (cursor != null)
                             {
                                 Console.Write("{0} {1} ", cursor, cursor.Angle);
                                 cursor = cursor.Ancestor;

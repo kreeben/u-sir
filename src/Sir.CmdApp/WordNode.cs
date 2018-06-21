@@ -9,13 +9,16 @@ namespace Sir.Store
     public class WordNode
     {
         public const double TRUE_ANGLE = 0.9d;
-        public const double FALSE_ANGLE = 0.2d;
+        public const double FALSE_ANGLE = 0.5d;
         public SortedList<char, int> WordVector { get; private set; }
 
         public WordNode Ancestor { get; set; }
         public WordNode Right { get; set; }
         public WordNode Left { get; set; }
         public double Angle { get; set; }
+        public double Highscore { get; set; }
+
+        private double highscore;
 
         public WordNode(string s):this(s.ToVector())
         {
@@ -47,12 +50,14 @@ namespace Sir.Store
                         winner = cursor;
                     }
                     cursor = cursor.Left;
-                }
+                } 
                 else
                 {
                     cursor = cursor.Right;
                 }
             }
+
+            winner.Highscore = highscore;
             return winner;
         }
 
@@ -93,7 +98,7 @@ namespace Sir.Store
             }
         }
 
-        private WordNode GetRoot()
+        public WordNode GetRoot()
         {
             var cursor = this;
             while (cursor != null)
@@ -104,19 +109,7 @@ namespace Sir.Store
             return cursor;
         }
 
-        //private void Detach()
-        //{
-        //    if (ReferenceEquals(Ancestor.Left, this))
-        //    {
-        //        Ancestor.Left = Left;
-        //        if (Ancestor.Left != null) Ancestor.Left.Ancestor = Ancestor;
-        //    }
-        //    else if (ReferenceEquals(Ancestor.Right, this))
-        //    {
-        //        Ancestor.Right = Right;
-        //        if (Ancestor.Right != null) Ancestor.Right.Ancestor = Ancestor;
-        //    }
-        //}
+
 
         public void Merge(WordNode node)
         {

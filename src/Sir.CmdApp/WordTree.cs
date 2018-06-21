@@ -9,6 +9,7 @@ namespace Sir.Store
         public WordNode Root { get; private set; }
 
         public int Count { get; private set; }
+        public int MergeCount { get; private set; }
 
         public WordTree(Stream stream)
         {
@@ -30,7 +31,13 @@ namespace Sir.Store
         {
             var node = new WordNode(word);
             if (Root.ClosestMatch(node).Add(node))
+            {
                 Count++;
+            }
+            else
+            {
+                MergeCount++;
+            }
         }
 
         public string Visualize()
