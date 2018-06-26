@@ -98,31 +98,27 @@ namespace Sir.Store
         public static SortedList<char, int> ToVector(this string word)
         {
             if (word.Length == 0) throw new ArgumentException();
-            //if (word.Length > 0 && word.Length < 4) return word.ToCharVector();
 
-            return word.ToCharVector();
+            var vec = word.ToCharVector();
+            var increment = word.Length;
 
-            //var tgs = word.ToTriGrams();
-            //var first = tgs[0];
-            //var result = first.ToCharVector();
-            //for(int i = 1; i < tgs.Length; i++)
-            //{
-            //    var second = tgs[i];
-            //    var v = second.ToCharVector();
-            //    result = result.Add(v);
-            //}
-            //return result;
+            vec[word[0]] += increment;
+            vec[word[word.Length - 1]] += increment;
+
+            return vec;
+            //var grams = string.Concat(word.ToTriGrams());
+            //return grams.ToCharVector();
         }
 
         public static string[] ToTriGrams(this string word)
         {
             if (word.Length == 0) throw new ArgumentException();
-            if (word.Length > 0 && word.Length < 4) return new string[] { word };
+            if (word.Length < 3) return new string[] { word };
 
-            var result = new string[word.Length-2];
-            for(int i = 0; i < word.Length - 2; i++)
+            var result = new string[word.Length-1];
+            for(int i = 1; i < word.Length; i++)
             {
-                result[i] = word.Substring(i, 3);
+                result[i-1] = new string(new[] { word[0], word[i] });
             }
             return result;
         }
