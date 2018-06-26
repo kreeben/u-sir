@@ -153,7 +153,6 @@ namespace Sir.CmdApp
                 {
                     throw new Exception("error");
                 }
-
             }
 
             return tree.Count - count;

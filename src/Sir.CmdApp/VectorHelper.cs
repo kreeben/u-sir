@@ -9,12 +9,10 @@ namespace Sir.Store
 
         public static double CosAngle(this SortedList<char, int> vec1, SortedList<char, int> vec2)
         {
-            var dotboth = Dot(vec1, vec2);
-            var dot1 = Dot(vec1, vec1);
-            var len1 = Math.Sqrt(dot1);
-            var dot2 = Dot(vec2, vec2);
-            var len2 = Math.Sqrt(dot2);
-            return dotboth / (len1 * len2);
+            var dotProduct = Dot(vec1, vec2);
+            var dotSelf1 = Dot(vec1, vec1);
+            var dotSelf2 = Dot(vec2, vec2);
+            return dotProduct / (Math.Sqrt(dotSelf1) * Math.Sqrt(dotSelf2));
         }
 
         public static long Dot(this SortedList<char, int> vec1, SortedList<char, int> vec2)
@@ -70,7 +68,7 @@ namespace Sir.Store
             }
             return result;
         }
-
+    
         public static SortedList<char, int> Subtract(this SortedList<char, int> vec1, SortedList<char, int> vec2)
         {
             var result = new SortedList<char, int>();
@@ -100,10 +98,10 @@ namespace Sir.Store
             if (word.Length == 0) throw new ArgumentException();
 
             var vec = word.ToCharVector();
-            var increment = word.Length;
+            //var increment = 1;
 
-            vec[word[0]] += increment;
-            vec[word[word.Length - 1]] += increment;
+            //vec[word[0]] += increment;
+            //vec[word[word.Length - 1]] += increment;
 
             return vec;
             //var grams = string.Concat(word.ToTriGrams());
