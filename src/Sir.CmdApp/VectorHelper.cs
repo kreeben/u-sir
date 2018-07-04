@@ -7,7 +7,7 @@ namespace Sir.Store
     {
         private static SortedList<char, int> Root = new SortedList<char, int> { { '\0', 1 } };
 
-        public static double CosAngle(this SortedList<char, int> vec1, SortedList<char, int> vec2)
+        public static double CosAngle(this SortedList<char, double> vec1, SortedList<char, double> vec2)
         {
             var dotProduct = Dot(vec1, vec2);
             var dotSelf1 = Dot(vec1, vec1);
@@ -15,9 +15,9 @@ namespace Sir.Store
             return dotProduct / (Math.Sqrt(dotSelf1) * Math.Sqrt(dotSelf2));
         }
 
-        public static long Dot(this SortedList<char, int> vec1, SortedList<char, int> vec2)
+        public static double Dot(this SortedList<char, double> vec1, SortedList<char, double> vec2)
         {
-            long product = 0;
+            double product = 0;
             var cursor1 = 0;
             var cursor2 = 0;
 
@@ -41,6 +41,18 @@ namespace Sir.Store
                     cursor2++;
                 }
             }
+            return product;
+        }
+
+        public static double Dot(this double[] vec1, double[] vec2)
+        {
+            double product = 0;
+
+            for (int i = 0; i < vec1.Length; i++)
+            {
+                product += vec1[i] * vec2[i];
+            }
+
             return product;
         }
 
@@ -68,7 +80,7 @@ namespace Sir.Store
             }
             return result;
         }
-    
+
         public static SortedList<char, int> Subtract(this SortedList<char, int> vec1, SortedList<char, int> vec2)
         {
             var result = new SortedList<char, int>();
@@ -93,7 +105,7 @@ namespace Sir.Store
             return result;
         }
 
-        public static SortedList<char, int> ToVector(this string word)
+        public static SortedList<char, double> ToVector(this string word)
         {
             if (word.Length == 0) throw new ArgumentException();
 
@@ -113,17 +125,17 @@ namespace Sir.Store
             if (word.Length == 0) throw new ArgumentException();
             if (word.Length < 3) return new string[] { word };
 
-            var result = new string[word.Length-1];
-            for(int i = 1; i < word.Length; i++)
+            var result = new string[word.Length - 1];
+            for (int i = 1; i < word.Length; i++)
             {
-                result[i-1] = new string(new[] { word[0], word[i] });
+                result[i - 1] = new string(new[] { word[0], word[i] });
             }
             return result;
         }
 
-        public static SortedList<char, int> ToCharVector(this string word)
+        public static SortedList<char, double> ToCharVector(this string word)
         {
-            var vec = new SortedList<char, int>();
+            var vec = new SortedList<char, double>();
 
             for (int i = 0; i < word.Length; i++)
             {
@@ -140,9 +152,30 @@ namespace Sir.Store
             return vec;
         }
 
-        public static double Length(this SortedList<char, int> vector)
+        public static double Length(this SortedList<char, double> vector)
         {
             return Math.Sqrt(Dot(vector, vector));
+        }
+
+        public static SortedList<char, double> Components(this string s)
+        {
+            var word = new WordNode(s);
+            var basevectors = new SortedList<char, SortedList<char, double>>();
+            var i = 0;
+            foreach (var c in word.WordVector.Keys)
+            {
+                var basevec = new SortedList<char, double>();
+                basevec[c] = 1;
+                basevectors[c] = basevec;
+            }
+            var components = new SortedList<char, double>();
+            i = 0;
+            foreach (var basevec in basevectors)
+            {
+                var angle = word.WordVector.CosAngle(basevec.Value);
+                components[basevec.Key] = angle;
+            }
+            return components;
         }
     }
 }

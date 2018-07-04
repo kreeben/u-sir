@@ -22,6 +22,28 @@ namespace Sir.Store
             Root = new WordNode('\0'.ToString());
         }
 
+        public (int depth, int width) Size()
+        {
+            if (Root == null) return (0, 0);
+
+            var width = 0;
+            var depth = 0;
+            var node = Root.Right;
+
+            while (node != null)
+            {
+                var d = node.Depth();
+                if (d > depth)
+                {
+                    depth = d;
+                }
+                width++;
+                node = node.Right;
+            }
+
+            return (depth, width);
+        }
+
         public WordNode Find(string word)
         {
             return Root.ClosestMatch(new WordNode(word));

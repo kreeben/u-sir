@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace Sir.Store
@@ -9,37 +6,47 @@ namespace Sir.Store
     public class WordNode
     {
         public const double TRUE_ANGLE = 0.9d;
-        public const double FALSE_ANGLE = 0.5d;
-        public SortedList<char, int> WordVector { get; private set; }
-
+        public const double FALSE_ANGLE = 0.45d;
+        public SortedList<char, double> WordVector { get; private set; }
         public WordNode Ancestor { get; set; }
         public WordNode Right { get; set; }
         public WordNode Left { get; set; }
         public double Angle { get; set; }
         public double Highscore { get; set; }
 
-        private double highscore;
-
         public WordNode(string s):this(s.ToVector())
         {
         }
 
-        public WordNode(SortedList<char, int> wordVector)
+        public WordNode(SortedList<char, double> wordVector)
         {
             this.WordVector = wordVector;
+        }
+
+        public int Depth()
+        {
+            var count = 0;
+            var node = Left;
+            while (node != null)
+            {
+                count++;
+                node = node.Left;
+            }
+            return count;
         }
         
         public WordNode ClosestMatch(WordNode node)
         {
-            var winner = this;
+            var best = this;
             var cursor = this;
             double highscore = 0;
 
             while (cursor != null)
             {
-                var angle = node.WordVector.CosAngle(cursor.WordVector);
+                var angle = cursor.WordVector.CosAngle(node.WordVector);
                 if (angle >= TRUE_ANGLE)
                 {
+                    cursor.Highscore = angle;
                     return cursor;
                 }
                 else if (angle > FALSE_ANGLE)
@@ -47,7 +54,7 @@ namespace Sir.Store
                     if (angle > highscore)
                     {
                         highscore = angle;
-                        winner = cursor;
+                        best = cursor;
                     }
                     cursor = cursor.Left;
                 } 
@@ -57,8 +64,8 @@ namespace Sir.Store
                 }
             }
 
-            winner.Highscore = highscore;
-            return winner;
+            best.Highscore = highscore;
+            return best;
         }
 
         public bool Add(WordNode node)

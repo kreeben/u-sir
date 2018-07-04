@@ -2,7 +2,7 @@
   "profiles": {
     "Sir.CmdApp": {
       "commandName": "Project",
-      "commandLineArgs": "add_file c:\\temp\\ *.html"
+      "commandLineArgs": "add_file c:\\temp *.html"
     }
   }
 }

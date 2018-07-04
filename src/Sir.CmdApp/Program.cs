@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -37,12 +38,16 @@ namespace Sir.CmdApp
                     Console.WriteLine(tree.Visualize());
                     Console.WriteLine("count: {0}", tree.Count);
                     Console.WriteLine("merges: {0}", tree.MergeCount);
+                    var size = tree.Size();
+                    Console.WriteLine();
+                    Console.WriteLine("depth {0} width {1}", size.depth, size.width);
                 }
                 else if (input[0] == "add_file" && input.Length == 3)
                 {
                     Console.Write("indexing ");
                     timer.Restart();
 
+                    ClearParsedFiles();
                     foreach (var file in Directory.GetFiles(input[1], input[2]))
                     {
                         var n = AddFile(file, tree);
@@ -55,6 +60,9 @@ namespace Sir.CmdApp
                     Console.WriteLine(tree.Visualize());
                     Console.WriteLine("count: {0}", tree.Count);
                     Console.WriteLine("merges: {0}", tree.MergeCount);
+                    var size = tree.Size();
+                    Console.WriteLine();
+                    Console.WriteLine("depth {0} width {1}", size.depth, size.width);
                 }
                 else if (input[0] == "add")
                 {
@@ -62,6 +70,9 @@ namespace Sir.CmdApp
                     Add(input.Skip(1).ToArray(), tree);
                     timer.Stop();
                     Console.WriteLine(tree.Visualize());
+                    var size = tree.Size();
+                    Console.WriteLine();
+                    Console.WriteLine("depth {0} width {1}", size.depth, size.width);
                 }
                 else if (input[0] == "find" && input.Length > 1)
                 {
@@ -123,6 +134,14 @@ namespace Sir.CmdApp
             tree.Dispose();
         }
 
+        private static void ClearParsedFiles()
+        {
+            foreach(var file in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.prs"))
+            {
+                File.Delete(file);
+            }
+        }
+
         private static WordNode Find(string input, WordTree tree)
         {
             return tree.Find(input);
@@ -149,10 +168,19 @@ namespace Sir.CmdApp
             {
                 tree.Add(word);
 
-                if (new WordNode(word).WordVector.CosAngle(tree.Find(word).WordVector) < WordNode.TRUE_ANGLE)
+                var wordvec = new WordNode(word).WordVector;
+
+                if (wordvec.CosAngle(tree.Find(word).WordVector) < WordNode.TRUE_ANGLE)
                 {
                     throw new Exception("error");
                 }
+
+                //Console.Write("{0} [", word);
+                //foreach (var c in word.Components())
+                //{
+                //    Console.Write("{0}:{1}, ", c.Key, c.Value);
+                //}
+                //Console.WriteLine("]");
             }
 
             return tree.Count - count;
@@ -161,8 +189,9 @@ namespace Sir.CmdApp
         static string[] Tokenize(string text)
         {
             var decoded = WebUtility.HtmlDecode(text);
-            var parser = new YesNoParser.YesNoParser('>', '<');
-            var parsed = parser.Parse(decoded).ToLower();
+            var parser = new YesNoParser.YesNoParser('>', '<', new[] { "script" });
+            var parsed = parser.Parse(decoded).ToLower(CultureInfo.CurrentCulture);
+            File.WriteAllText(Guid.NewGuid() + ".prs", parsed);
             return parsed.Split(
                 new char[] { ' ', '(', ')', '[', ']', '{', '}', '.', ',', ';', ':', '/', '\\', '*', '"', '\'',
                     '?', '-', '+', '_', '^', '<', '>', '|', '=', '&', '\r', '\n', '\t'},
