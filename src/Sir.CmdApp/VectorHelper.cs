@@ -1,11 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Sir.Store
 {
     public static class VectorHelper
     {
-        private static SortedList<char, int> Root = new SortedList<char, int> { { '\0', 1 } };
+        public static long Serialize(this SortedList<char, double> vec, Stream stream)
+        {
+            var pos = stream.Position;
+
+            for (int i = 0; i < vec.Count; i++)
+            {
+                var c = vec.Keys[i];
+                var key = BitConverter.GetBytes(c);
+                var val = BitConverter.GetBytes(vec[c]);
+
+                stream.Write(key, 0, key.Length);
+                stream.Write(val, 0, val.Length);
+            }
+
+            return pos;
+        }
+
+        public static byte[] Concat(this byte[] buf1, byte[] buf2)
+        {
+            byte[] result = new byte[buf1.Length + buf2.Length];
+            Buffer.BlockCopy(buf1, 0, result, 0, buf1.Length);
+            Buffer.BlockCopy(buf2, 0, result, buf1.Length, buf2.Length);
+            return result;
+        }
+
+        public static byte[] Concat(this byte[] buf1, byte[] buf2, byte[] buf3)
+        {
+            byte[] result = new byte[buf1.Length + buf2.Length + buf3.Length];
+            Buffer.BlockCopy(buf1, 0, result, 0, buf1.Length);
+            Buffer.BlockCopy(buf2, 0, result, buf1.Length, buf2.Length);
+            Buffer.BlockCopy(buf3, 0, result, buf1.Length + buf2.Length, buf3.Length);
+            return result;
+        }
+
+        public static byte[] Concat(this byte[] buf1, byte[] buf2, byte[] buf3, byte[] buf4)
+        {
+            byte[] result = new byte[buf1.Length + buf2.Length + buf3.Length + buf4.Length];
+            Buffer.BlockCopy(buf1, 0, result, 0, buf1.Length);
+            Buffer.BlockCopy(buf2, 0, result, buf1.Length, buf2.Length);
+            Buffer.BlockCopy(buf3, 0, result, buf1.Length + buf2.Length, buf3.Length);
+            Buffer.BlockCopy(buf4, 0, result, buf1.Length + buf2.Length + buf3.Length, buf4.Length);
+            return result;
+        }
 
         public static double CosAngle(this SortedList<char, double> vec1, SortedList<char, double> vec2)
         {
@@ -159,7 +202,7 @@ namespace Sir.Store
 
         public static SortedList<char, double> Components(this string s)
         {
-            var word = new WordNode(s);
+            var word = new VectorNode(s);
             var basevectors = new SortedList<char, SortedList<char, double>>();
             var i = 0;
             foreach (var c in word.WordVector.Keys)

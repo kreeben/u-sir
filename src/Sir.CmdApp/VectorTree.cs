@@ -3,23 +3,18 @@ using System.IO;
 
 namespace Sir.Store
 {
-    public class WordTree : IDisposable
+    public class VectorTree
     {
-        private readonly Stream stream;
-        public WordNode Root { get; private set; }
+        public VectorNode Root { get; private set; }
 
         public int Count { get; private set; }
         public int MergeCount { get; private set; }
 
-        public WordTree(Stream stream)
-        {
-            this.stream = stream;
-            Root = new WordNode('\0'.ToString());
-        }
+        public VectorTree() : this(new VectorNode('\0'.ToString())) { }
 
-        public WordTree()
+        public VectorTree(VectorNode root)
         {
-            Root = new WordNode('\0'.ToString());
+            Root = root;
         }
 
         public (int depth, int width) Size()
@@ -44,14 +39,14 @@ namespace Sir.Store
             return (depth, width);
         }
 
-        public WordNode Find(string word)
+        public VectorNode Find(string word)
         {
-            return Root.ClosestMatch(new WordNode(word));
+            return Root.ClosestMatch(new VectorNode(word));
         }
 
         public void Add(string word)
         {
-            var node = new WordNode(word);
+            var node = new VectorNode(word);
             if (Root.ClosestMatch(node).Add(node))
             {
                 Count++;
@@ -64,15 +59,26 @@ namespace Sir.Store
 
         public string Visualize()
         {
-            return Root.Visualize();
+            if (Root != null)
+            {
+                return Root.Visualize();
+            }
+            return string.Empty;
         }
 
-        public void Dispose()
+        public void Serialize(Stream treeStream, Stream wordStream)
         {
-            if (stream != null)
+            if (Root != null)
             {
-                stream.Dispose();
+                Root.Serialize(treeStream, wordStream);
             }
         }
+
+        public static VectorTree Load(Stream treeStream, Stream wordStream)
+        {
+            var root = VectorNode.Deserialize(treeStream, wordStream);
+            return new VectorTree(root);
+        }
+
     }
 }
