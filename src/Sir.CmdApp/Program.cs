@@ -1,6 +1,7 @@
 ﻿using Sir.Store;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Sir.CmdApp
 {
@@ -13,6 +14,18 @@ namespace Sir.CmdApp
             string[] userInput = args.Length == 0 ? null : args;
             var methods = Inspector.GetMethods(typeof(App));
             var app = new App();
+
+            if (File.Exists("tree.bin") && File.Exists("word.bin"))
+            {
+                timer.Start();
+                using (var treeStream = File.OpenRead("tree.bin"))
+                using (var wordStream = File.OpenRead("word.bin"))
+                {
+                    tree = VectorTree.Load(treeStream, wordStream);
+                }
+                timer.Stop();
+                Console.WriteLine("loaded tree in {0} ticks", timer.ElapsedTicks);
+            }
 
             while (true)
             {

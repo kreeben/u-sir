@@ -8,7 +8,7 @@ namespace Sir.Store
     public class VectorNode
     {
         public const double TRUE_ANGLE = 0.9d;
-        public const double FALSE_ANGLE = 0.5d;
+        public const double FALSE_ANGLE = 0.48d;
         private VectorNode _right;
         private VectorNode _left;
         private long _vecOffset = -1;

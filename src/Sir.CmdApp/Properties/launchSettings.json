@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Sir.CmdApp": {
-      "commandName": "Project",
-      "commandLineArgs": "addfile c:\\temp *.html"
+      "commandName": "Project"
     }
   }
 }
