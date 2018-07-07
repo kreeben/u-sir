@@ -15,17 +15,17 @@ namespace Sir.CmdApp
             var methods = Inspector.GetMethods(typeof(App));
             var app = new App();
 
-            if (File.Exists("tree.bin") && File.Exists("word.bin"))
-            {
-                timer.Start();
-                using (var treeStream = File.OpenRead("tree.bin"))
-                using (var wordStream = File.OpenRead("word.bin"))
-                {
-                    tree = VectorTree.Load(treeStream, wordStream);
-                }
-                timer.Stop();
-                Console.WriteLine("loaded tree in {0} ticks", timer.ElapsedTicks);
-            }
+            //if (File.Exists("tree.bin") && File.Exists("word.bin"))
+            //{
+            //    timer.Start();
+            //    using (var treeStream = File.OpenRead("tree.bin"))
+            //    using (var wordStream = File.OpenRead("word.bin"))
+            //    {
+            //        tree = VectorTree.Load(treeStream, wordStream);
+            //    }
+            //    timer.Stop();
+            //    Console.WriteLine("loaded tree in {0} ticks", timer.ElapsedTicks);
+            //}
 
             while (true)
             {

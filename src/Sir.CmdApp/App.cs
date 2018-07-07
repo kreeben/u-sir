@@ -11,8 +11,12 @@ namespace Sir.CmdApp
 {
     public class App
     {
-        public void ClearParsedFiles()
+        public void ClearFiles(string[] input, VectorTree tree)
         {
+            foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.bin"))
+            {
+                File.Delete(file);
+            }
             foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.prs"))
             {
                 File.Delete(file);
@@ -21,7 +25,7 @@ namespace Sir.CmdApp
 
         public void Analyze(string[] input, VectorTree tree)
         {
-            var node = Find(string.Join("", input.Skip(1).ToArray()), tree);
+            var node = tree.Find(string.Join(" ", input.Skip(1).ToArray()));
             if (node != null)
             {
                 foreach (var x in node.WordVector)
@@ -34,7 +38,7 @@ namespace Sir.CmdApp
         public void Find(string[] input, VectorTree tree)
         {
             var q = string.Join("", input.Skip(1).ToArray());
-            var result = Find(q, tree);
+            var result = tree.Find(q);
 
             if (result == null)
             {
@@ -54,14 +58,9 @@ namespace Sir.CmdApp
             }
         }
 
-        private VectorNode Find(string input, VectorTree tree)
+        public void AddFiles(string[] input, VectorTree tree)
         {
-            return tree.Find(input);
-        }
-
-        public void AddFile(string[] input, VectorTree tree)
-        {
-            ClearParsedFiles();
+            ClearFiles(input, tree);
             foreach (var file in Directory.GetFiles(input[1], input[2]))
             {
                 var n = AddFile(file, tree);
@@ -70,7 +69,7 @@ namespace Sir.CmdApp
             Console.WriteLine(tree.Visualize());
             var size = tree.Size();
             Console.WriteLine();
-            Console.WriteLine("depth {0} width {1}", size.depth, size.width);
+            Console.WriteLine("depth {0} width {1} count: {2}, merges: {3}", size.depth, size.width, tree.Count, tree.MergeCount);
 
             using (var treeStream = File.Create("tree.bin"))
             using (var wordStream = File.Create("word.bin"))
@@ -78,21 +77,22 @@ namespace Sir.CmdApp
                 tree.Serialize(treeStream, wordStream);
             }
 
-            using (var treeStream = File.OpenRead("tree.bin"))
-            using (var wordStream = File.OpenRead("word.bin"))
-            {
-                var deserialized = VectorTree.Load(treeStream, wordStream);
+            //using (var treeStream = File.OpenRead("tree.bin"))
+            //using (var wordStream = File.OpenRead("word.bin"))
+            //{
+            //    var deserialized = VectorTree.Load(treeStream, wordStream);
 
-                Console.WriteLine(deserialized.Visualize());
-                var deserializedSize = deserialized.Size();
-                Console.WriteLine("depth {0} width {1}", deserializedSize.depth, deserializedSize.width);
-            }
+            //    Console.WriteLine(deserialized.Visualize());
+            //    var deserializedSize = deserialized.Size();
+            //    Console.WriteLine("depth {0} width {1}", deserializedSize.depth, deserializedSize.width);
+            //}
         }
 
         private int AddFile(string path, VectorTree tree)
         {
             var text = GetLocalResource(path);
-            return AddInternal(Tokenize(text), tree);
+            var tokens = Tokenize(text);
+            return AddInternal(tokens, tree);
         }
 
         public void AddWebPage(string[] input, VectorTree tree)
@@ -131,6 +131,8 @@ namespace Sir.CmdApp
 
             foreach (var word in input)
             {
+                if (string.IsNullOrWhiteSpace(word)) continue;
+
                 tree.Add(word);
 
                 var wordvec = new VectorNode(word).WordVector;
@@ -153,22 +155,27 @@ namespace Sir.CmdApp
 
         public void Tokenize(string[] input, VectorTree tree)
         {
-            foreach(var token in Tokenize(string.Join("", input.Skip(1).ToArray())))
+            var tokens = Tokenize(string.Join("", input.Skip(1).ToArray()));
+            foreach (var token in tokens)
             {
                 Console.WriteLine(token);
             }
         }
 
-        private string[] Tokenize(string text)
+        private string[] Tokenize(string dirtyText)
         {
-            var decoded = WebUtility.HtmlDecode(text);
+            var decoded = WebUtility.HtmlDecode(dirtyText);
             var parser = new YesNoParser.YesNoParser('>', '<', new[] { "script" });
             var parsed = parser.Parse(decoded).ToLower(CultureInfo.CurrentCulture);
             File.WriteAllText(Guid.NewGuid() + ".prs", parsed);
-            return parsed.Split(
-                new char[] { ' ', '(', ')', '[', ']', '{', '}', '.', ',', ';', ':', '/', '\\', '*', '"', '\'',
-                    '?', '-', '+', '_', '^', '<', '>', '|', '=', '&', '\r', '\n', '\t'},
-                StringSplitOptions.RemoveEmptyEntries);
+            //return parsed.Split(
+            //    new char[] { ' ', '(', ')', '[', ']', '{', '}', '.', ',', ';', ':', '/', '\\', '*', '"', '\'',
+            //        '?', '-', '+', '_', '^', '<', '>', '|', '=', '&', '\r', '\n', '\t'},
+            //    StringSplitOptions.RemoveEmptyEntries);
+            return parsed.Split(new char[] { '.', ',', ';', ':', '?',
+                                             '\n', '\r', '\t', '(', ')', '[', ']',
+                                             '"', '\'', '`', '´',
+                                             '-'}, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public void GetWebResource(string[] input, VectorTree tree)

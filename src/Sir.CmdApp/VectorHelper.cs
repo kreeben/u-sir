@@ -153,14 +153,7 @@ namespace Sir.Store
             if (word.Length == 0) throw new ArgumentException();
 
             var vec = word.ToCharVector();
-            //var increment = 1;
-
-            //vec[word[0]] += increment;
-            //vec[word[word.Length - 1]] += increment;
-
             return vec;
-            //var grams = string.Concat(word.ToTriGrams());
-            //return grams.ToCharVector();
         }
 
         public static string[] ToTriGrams(this string word)

@@ -39,21 +39,23 @@ namespace Sir.Store
             return (depth, width);
         }
 
-        public VectorNode Find(string word)
+        public VectorNode Find(string pattern)
         {
-            return Root.ClosestMatch(new VectorNode(word));
+            return Root.ClosestMatch(new VectorNode(pattern));
         }
 
-        public void Add(string word)
+        public bool Add(string word)
         {
             var node = new VectorNode(word);
             if (Root.ClosestMatch(node).Add(node))
             {
                 Count++;
+                return true;
             }
             else
             {
                 MergeCount++;
+                return false;
             }
         }
 
