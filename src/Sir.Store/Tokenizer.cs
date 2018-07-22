@@ -9,7 +9,7 @@ namespace Sir.Store
                             '.', ',', ';', ':', '?', '!',
                             '\n', '\r', '\t',
                             '(', ')', '[', ']',
-                            '"', '\'', '/', '`', '´', '-'
+                            '"', '`', '´'
                             };
 
         public string[] Tokenize(string text)

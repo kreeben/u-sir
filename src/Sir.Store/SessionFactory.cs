@@ -15,6 +15,8 @@ namespace Sir.Store
         private readonly Stream _writableValueStream;
         private readonly Stream _keyMapWriteStream;
         private readonly Stream _valueStream;
+        private readonly Stream _valueIndexStream;
+        private readonly Stream _writableValueIndexStream;
 
         public bool IsDisposed { get; private set; }
 
@@ -28,6 +30,8 @@ namespace Sir.Store
                 }
 
                 _writableValueStream.Dispose();
+                _valueIndexStream.Dispose();
+                _writableValueIndexStream.Dispose();
                 _keyMapWriteStream.Dispose();
                 _valueStream.Dispose();
 
@@ -43,6 +47,8 @@ namespace Sir.Store
             _dir = dir;
             _valueStream = CreateReadWriteStream(Path.Combine(dir, "_.val"));
             _writableValueStream = CreateAppendStream(Path.Combine(dir, "_.val"));
+            _valueIndexStream = CreateReadWriteStream(Path.Combine(dir, "_.vix"));
+            _writableValueIndexStream = CreateAppendStream(Path.Combine(dir, "_.vix"));
             _keyMapWriteStream = new FileStream(Path.Combine(dir, "_.kmap"), FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
         }
 
@@ -103,6 +109,7 @@ namespace Sir.Store
             var buf = BitConverter.GetBytes(keyHash);
 
             _keyMapWriteStream.Write(buf, 0, sizeof(ulong));
+            _keyMapWriteStream.Flush();
         }
 
         public uint GetKey(ulong keyHash)
@@ -127,10 +134,11 @@ namespace Sir.Store
                 ValueStream = _writableValueStream,
                 KeyStream = CreateAppendStream(string.Format("{0}.key", collectionId)),
                 DocStream = CreateAppendStream(string.Format("{0}.docs", collectionId)),
-                ValueIndexStream = CreateAppendStream(string.Format("{0}.vix", collectionId)),
+                ValueIndexStream = _writableValueIndexStream,
                 KeyIndexStream = CreateAppendStream(string.Format("{0}.kix", collectionId)),
                 DocIndexStream = CreateReadWriteStream(string.Format("{0}.dix", collectionId)),
-                PostingsStream = CreateReadWriteStream(string.Format("{0}.pos", collectionId))
+                PostingsStream = CreateReadWriteStream(string.Format("{0}.pos", collectionId)),
+                VectorStream = CreateAppendStream(string.Format("{0}.vec", collectionId))
             };
 
             session.Index = GetIndex(collectionId);
@@ -144,10 +152,11 @@ namespace Sir.Store
                 ValueStream = _valueStream,
                 KeyStream = CreateReadStream(string.Format("{0}.key", collectionId)),
                 DocStream = CreateReadStream(string.Format("{0}.doc", collectionId)),
-                ValueIndexStream = CreateAppendStream(string.Format("{0}.vix", collectionId)),
+                ValueIndexStream = _valueIndexStream,
                 KeyIndexStream = CreateAppendStream(string.Format("{0}.kix", collectionId)),
                 DocIndexStream = CreateAppendStream(string.Format("{0}.dix", collectionId)),
-                PostingsStream = CreateReadStream(string.Format("{0}.pos", collectionId))
+                PostingsStream = CreateReadStream(string.Format("{0}.pos", collectionId)),
+                VectorStream = CreateReadStream(string.Format("{0}.vec", collectionId))
             };
 
             session.Index = GetIndex(collectionId);

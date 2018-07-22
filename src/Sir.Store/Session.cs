@@ -9,6 +9,7 @@ namespace Sir.Store
         protected readonly string Dir;
 
         public SessionFactory SessionFactory { get; private set; }
+        public ulong CollectionId { get; }
         public SortedList<uint, VectorNode> Index { get; set; }
         public Stream ValueStream { get; set; }
         public Stream KeyStream { get; set; }
@@ -18,12 +19,12 @@ namespace Sir.Store
         public Stream DocIndexStream { get; set; }
         public Stream PostingsStream { get; set; }
         public Stream VectorStream { get; set; }
-        public Stream IndexStream { get; set; }
 
         public Session(string directory, ulong collectionId, SessionFactory sessionFactory)
         {
             Dir = directory;
             SessionFactory = sessionFactory;
+            CollectionId = collectionId;
         }
 
         protected VectorNode GetKeyIndex(ulong key)
@@ -41,8 +42,7 @@ namespace Sir.Store
             return root;
         }
 
-
-        public void Dispose()
+        public virtual void Dispose()
         {
         }
     }

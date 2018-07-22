@@ -60,6 +60,7 @@ namespace Sir.Store
 
             var offset = _stream.Position;
             _stream.Write(buffer, 0, buffer.Length);
+
             return (offset, buffer.Length, dataType);
         }
     }

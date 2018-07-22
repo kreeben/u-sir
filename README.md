@@ -1,3 +1,3 @@
 # Sir
 
-System for information retrieval.
+Sir is a search engine with HTTP API.

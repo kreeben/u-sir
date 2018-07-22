@@ -56,6 +56,11 @@ namespace Sir.Store
             TermVector = wordVector;
         }
 
+        public void AddPosting(ulong docId)
+        {
+            _docIds.Add(docId);
+        }
+
         private IEnumerable<byte[]> ToStream()
         {
             byte[] terminator = new byte[1];
@@ -89,7 +94,7 @@ namespace Sir.Store
             _postingsOffset = postingsStream.Position;
             _vecOffset = TermVector.Serialize(vectorStream);
 
-            foreach(var docId in _docIds)
+            foreach (var docId in _docIds)
             {
                 var posting = BitConverter.GetBytes(docId);
                 postingsStream.Write(posting, 0, sizeof(ulong));
@@ -216,10 +221,11 @@ namespace Sir.Store
             return best;
         }
 
-        public bool Add(string word, ulong docId, uint valueId)
+        public bool Add(string word, uint valueId, ulong docId)
         {
             var node = new VectorNode(word) { ValueId = valueId };
-            return Add(node, docId);
+            node.AddPosting(docId);
+            return Add(node);
         }
 
         /// <summary>
@@ -227,13 +233,13 @@ namespace Sir.Store
         /// </summary>
         /// <returns>True if the word is unique, false if it's a duplicate, i.e. there is already a word in the tree
         /// that is similiar enough to the one being added that they're basically equal.</returns>
-        public bool Add(VectorNode node, ulong docId)
+        public bool Add(VectorNode node )
         {
             node.Angle = node.TermVector.CosAngle(TermVector);
 
             if (node.Angle >= TrueAngle)
             {
-                Merge(node, docId);
+                Merge(node);
                 return false;
             }
             else if (node.Angle <= FalseAngle)
@@ -245,7 +251,7 @@ namespace Sir.Store
                 }
                 else
                 {
-                    return Right.ClosestMatch(node).Add(node, docId);
+                    return Right.ClosestMatch(node).Add(node);
                 }
             }
             else
@@ -257,7 +263,7 @@ namespace Sir.Store
                 }
                 else
                 {
-                    return Left.ClosestMatch(node).Add(node, docId);
+                    return Left.ClosestMatch(node).Add(node);
                 }
             }
         }
@@ -273,7 +279,7 @@ namespace Sir.Store
             return cursor;
         }
 
-        public void Merge(VectorNode node, ulong docId)
+        public void Merge(VectorNode node)
         {
             var angle = node.TermVector.CosAngle(TermVector);
 
@@ -282,7 +288,10 @@ namespace Sir.Store
                 TermVector = TermVector.Add(node.TermVector);
             }
 
-            _docIds.Add(docId);
+            foreach(var id in node._docIds)
+            {
+                _docIds.Add(id);
+            }
         }
 
         public string Visualize()

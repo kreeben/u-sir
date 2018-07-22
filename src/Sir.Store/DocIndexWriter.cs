@@ -13,6 +13,7 @@ namespace Sir.Store
             _stream = stream;
 
             stream.Seek(0, SeekOrigin.Begin);
+
             var buf = new byte[_blockSize];
             var read = stream.Read(buf, 0, _blockSize);
 

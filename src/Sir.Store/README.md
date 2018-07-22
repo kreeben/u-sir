@@ -8,6 +8,14 @@ In-process document database and free-text search engine.
 
 	val val val... 
 
+### _.vix
+
+	(val_id) val_offset val_len val_type
+
+### _.kmap
+
+	(key_id) key_hash
+
 ### .key
 
 	key key key... 
@@ -15,10 +23,6 @@ In-process document database and free-text search engine.
 ### .docs
 
 	key_id val_id...
-
-### .vix
-
-	(val_id) val_offset val_len val_type
 
 ### .kix
 
@@ -31,10 +35,6 @@ In-process document database and free-text search engine.
 ### .pos
 
 	[doc_id doc_id next_page_offset] [doc_id       ]...
-
-### _.kmap
-
-	(key_id) key_hash
 
 ### .ix
 

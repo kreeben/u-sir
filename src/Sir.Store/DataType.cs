@@ -1,5 +1,8 @@
 ﻿namespace Sir.Store
 {
+    /// <summary>
+    /// Supported data types.
+    /// </summary>
     public static class DataType
     {
         public static byte STRING = 1;

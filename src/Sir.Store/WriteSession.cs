@@ -6,9 +6,12 @@ namespace Sir.Store
 {
     public class WriteSession : Session
     {
+        private readonly IDictionary<string, VectorNode> _dirty;
+
         public WriteSession(string directory, ulong collectionId, SessionFactory sessionFactory) 
             : base(directory, collectionId, sessionFactory)
         {
+            _dirty = new Dictionary<string, VectorNode>();
         }
 
         public void Write(IEnumerable<IModel> data, ITokenizer tokenizer)
@@ -23,7 +26,6 @@ namespace Sir.Store
             foreach (var model in data)
             {
                 var docId = docIx.GetNextDocId();
-
                 var docMapping = new List<(uint keyId, uint valId)>();
 
                 for (int i = 0; i < model.Keys.Length; i++)
@@ -84,8 +86,13 @@ namespace Sir.Store
                         }
 
                         // add term and posting to index
-                        fieldIndex.Add((string)term.Value, docId, valId);
+                        fieldIndex.Add((string)term.Value, valId, docId);
+
+                        // store refs to key and value
+                        docMapping.Add((keyId, valId));
                     }
+
+                    _dirty.Add(string.Format("{0}.{1}", CollectionId, keyId), fieldIndex);
                 }
 
                 var docMeta = docs.Append(docMapping);
@@ -98,5 +105,29 @@ namespace Sir.Store
             }
         }
 
+        public override void Dispose()
+        {
+            foreach (var node in _dirty)
+            {
+                var fn = Path.Combine(Dir, node.Key + ".ix");
+                var fileMode = File.Exists(fn) ? FileMode.Truncate : FileMode.Append;
+
+                using (var stream = new FileStream(fn, fileMode, FileAccess.Write, FileShare.None))
+                {
+                    node.Value.Serialize(stream, VectorStream, PostingsStream);
+                }
+            }
+
+            ValueStream.Flush();
+            KeyStream.Flush();
+            DocStream.Flush();
+            ValueIndexStream.Flush();
+            KeyIndexStream.Flush();
+            DocIndexStream.Flush();
+            PostingsStream.Flush();
+            VectorStream.Flush();
+
+            base.Dispose();
+        }
     }
 }
