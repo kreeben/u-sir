@@ -6,7 +6,8 @@ namespace Sir.Store
 {
     public class WriteSession : Session
     {
-        public WriteSession(string directory, ulong collectionId) : base(directory, collectionId)
+        public WriteSession(string directory, ulong collectionId, SessionFactory sessionFactory) 
+            : base(directory, collectionId, sessionFactory)
         {
         }
 
@@ -43,7 +44,7 @@ namespace Sir.Store
                     {
                         foreach (var term in tokenizer.Tokenize(str))
                         {
-                            terms.Add(new Term(key, term, CollectionId));
+                            terms.Add(new Term(key, term));
                         }
                     }
 
@@ -54,7 +55,7 @@ namespace Sir.Store
                         // store key
                         var keyInfo = keys.Append(key);
                         keyId = keyIx.Append(keyInfo.offset, keyInfo.len, keyInfo.dataType);
-                        AddKey(keyHash, keyId);
+                        SessionFactory.AddKey(keyHash, keyId);
 
                         // add new index to global in-memory tree
                         fieldIndex = new VectorNode();
@@ -62,7 +63,7 @@ namespace Sir.Store
                     }
                     else
                     {
-                        keyId = GetKey(keyHash);
+                        keyId = SessionFactory.GetKey(keyHash);
                     }
 
                     foreach (var term in terms)

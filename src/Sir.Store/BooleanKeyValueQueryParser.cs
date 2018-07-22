@@ -9,21 +9,21 @@
         {
         }
 
-        public Query Parse(ulong collectionId,  string query)
+        public Query Parse(string query)
         {
             var tokens = query.Split(new[] { ' ', ':' });
             if (tokens.Length > 1)
             {
                 var key = tokens[0];
                 var val = tokens[1];
-                var q = new Query { Term = new Term(key, val, collectionId) };
-                Parse(q, tokens, collectionId);
+                var q = new Query { Term = new Term(key, val) };
+                Parse(q, tokens);
                 return q;
             }
             return null;
         }
 
-        private void Parse(Query query, string[] tokens, ulong collectionId)
+        private void Parse(Query query, string[] tokens)
         {
             for (int i = 2; i < tokens.Length; i++)
             {
@@ -31,7 +31,7 @@
                 var val = tokens[++i];
                 var next = new Query
                 {
-                    Term = new Term(key, val, collectionId)
+                    Term = new Term(key, val)
                 };
 
                 var strVal = (string)next.Term.Value;

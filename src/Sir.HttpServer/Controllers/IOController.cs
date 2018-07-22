@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Sir.HttpServer.Controllers
 {
-    //[Route("write")]
+    [Route("io")]
     public class IOController : Controller
     {
         private PluginCollection _plugins;
@@ -69,10 +69,7 @@ namespace Sir.HttpServer.Controllers
         [HttpPut("{*collectionId}")]
         public HttpResponseMessage Get(string collectionId, string query)
         {
-            if (string.IsNullOrWhiteSpace(collectionId) || string.IsNullOrWhiteSpace(query))
-            {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            }
+            //TODO: add pagination input parameters
 
             var contentType = Request.ContentType;
             var accepts = Request.Headers["Accept"];
@@ -99,7 +96,7 @@ namespace Sir.HttpServer.Controllers
             }
 
             var parsedQuery = string.IsNullOrWhiteSpace(query) ? null
-                : queryParser.Parse(collectionId.ToHash(), query);
+                : queryParser.Parse(query);
 
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             var outputStream = reader.Read(modelBinder, parsedQuery);

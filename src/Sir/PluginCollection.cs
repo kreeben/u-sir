@@ -32,6 +32,11 @@ namespace Sir
 
         public T Get<T>(string key) where T : IPlugin
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return All<T>(key).FirstOrDefault();
         }
 

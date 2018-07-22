@@ -1,10 +1,10 @@
 # Sir.Store
 
-In-process document database.
+In-process document database and free-text search engine.
 
 ## File format
 
-### .val
+### _.val
 
 	val val val... 
 
@@ -12,7 +12,7 @@ In-process document database.
 
 	key key key... 
 
-### .doc
+### .docs
 
 	key_id val_id...
 
@@ -32,9 +32,14 @@ In-process document database.
 
 	[doc_id doc_id next_page_offset] [doc_id       ]...
 
-### .kmap
+### _.kmap
 
 	(key_id) key_hash
 
 ### .ix
+
+	[node][node]...
+
 ### .vec
+
+	[char][int][char][int]...
