@@ -32,7 +32,7 @@ namespace Sir.Store
                 {
                     var key = model.Keys[i];
                     var keyHash = key.ToHash();
-                    var fieldIndex = GetKeyIndex(keyHash);
+                    var fieldIndex = GetIndex(keyHash);
                     var val = model.Values[i];
                     var str = val as string;
                     var terms = new List<Term>();

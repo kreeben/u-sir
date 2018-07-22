@@ -6,7 +6,7 @@ using System.Runtime.Loader;
 
 namespace Sir.HttpServer
 {
-    public static class PluginFactory
+    public static class ServiceConfiguration
     {
         public static IServiceProvider Configure(IServiceCollection services)
         {
@@ -22,13 +22,11 @@ namespace Sir.HttpServer
                     if (!type.IsInterface)
                     {
                         var interfaces = type.GetInterfaces();
-                        //var firstInterface = interfaces.FirstOrDefault();
-                        //var contract = firstInterface ?? type;
-                        //var lastInterface = interfaces.LastOrDefault() ?? contract;
 
                         if (interfaces.Contains(typeof(IPluginStart)))
                         {
-                            ((IPluginStart)Activator.CreateInstance(type)).OnApplicationStartup(services);
+                            ((IPluginStart)Activator.CreateInstance(type))
+                                .OnApplicationStartup(services);
                         }
                         else if (interfaces.Contains(typeof(IPluginStop)) || 
                             interfaces.Contains(typeof(IPlugin)))
@@ -38,7 +36,6 @@ namespace Sir.HttpServer
                                 services.Add(new ServiceDescriptor(
                                 contract, type, ServiceLifetime.Singleton));
                             }
-                            
                         }
                     }
                 }
@@ -48,6 +45,9 @@ namespace Sir.HttpServer
 
             var serviceProvider = services.BuildServiceProvider();
             var plugins = serviceProvider.GetService<PluginCollection>();
+
+            // Create instances of all plugins and register them with the PluginCollection,
+            // so that they can be fetched at runtime by Content-Type and System.Type.
 
             foreach (var service in serviceProvider.GetServices<IModelBinder>())
             {

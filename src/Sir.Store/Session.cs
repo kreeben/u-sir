@@ -27,15 +27,15 @@ namespace Sir.Store
             CollectionId = collectionId;
         }
 
-        protected VectorNode GetKeyIndex(ulong key)
+        public VectorNode GetIndex(ulong key)
         {
             uint keyId;
-            if(!SessionFactory.TryGetKeyId(key, out keyId))
+            if (!SessionFactory.TryGetKeyId(key, out keyId))
             {
                 return null;
             }
             VectorNode root;
-            if(!Index.TryGetValue(keyId, out root))
+            if (!Index.TryGetValue(keyId, out root))
             {
                 return null;
             }

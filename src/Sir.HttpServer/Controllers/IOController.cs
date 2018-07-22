@@ -59,8 +59,8 @@ namespace Sir.HttpServer.Controllers
                     throw ew;
                 }
             }
-            //Response.Headers.Add(
-            //    "Location", new Microsoft.Extensions.Primitives.StringValues(collectionId));
+            Response.Headers.Add(
+                "Location", new Microsoft.Extensions.Primitives.StringValues(string.Format("/{0}", collectionId)));
 
             return StatusCode(201); // Created
         }
@@ -69,16 +69,12 @@ namespace Sir.HttpServer.Controllers
         [HttpPut("{*collectionId}")]
         public HttpResponseMessage Get(string collectionId, string query)
         {
-            //TODO: add pagination input parameters
+            //TODO: add pagination
 
             var contentType = Request.ContentType;
             var accepts = Request.Headers["Accept"];
 
-            if (query != null)
-            {
-                contentType = "text/plain";
-            }
-            else
+            if (query == null)
             {
                 using (var r = new StreamReader(Request.Body))
                 {
@@ -87,7 +83,7 @@ namespace Sir.HttpServer.Controllers
             }
 
             var queryParser = _plugins.Get<IQueryParser>(contentType);
-            var modelBinder = _plugins.Get<IModelBinder>(accepts);
+            var modelBinder = _plugins.Get<IModelFormatter>(accepts);
             var reader = _plugins.Get<IReader>(accepts);
 
             if (queryParser == null || modelBinder == null || reader == null)
@@ -95,11 +91,11 @@ namespace Sir.HttpServer.Controllers
                 return new HttpResponseMessage(System.Net.HttpStatusCode.UnsupportedMediaType);
             }
 
-            var parsedQuery = string.IsNullOrWhiteSpace(query) ? null
-                : queryParser.Parse(query);
+            var parsedQuery = queryParser.Parse(query);
+            parsedQuery.CollectionId = collectionId.ToHash();
 
-            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             var outputStream = reader.Read(modelBinder, parsedQuery);
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             response.Content = new StreamContent(outputStream);
             return response;
         }

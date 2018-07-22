@@ -48,9 +48,21 @@ namespace Sir.Store
             }
         }
 
-        public Stream Read(IModelBinder modelBinder, Query query)
+        public Stream Read(IModelFormatter modelFormatter, Query query)
         {
-            throw new NotImplementedException();
+            ulong keyHash = query.Term.Key.ToString().ToHash();
+            uint keyId;
+
+            if (_sessionFactory.TryGetKeyId(keyHash, out keyId))
+            {
+                using (var session = _sessionFactory.CreateReadSession(query.CollectionId))
+                {
+                    var ix = session.GetIndex(keyHash);
+                    var match = ix.ClosestMatch(query.Term.Value.ToString());
+
+                }
+            }
+            
         }
     }
 }

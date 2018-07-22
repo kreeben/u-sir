@@ -4,6 +4,6 @@ namespace Sir
 {
     public interface IReader : IPlugin
     {
-        Stream Read(IModelBinder modelBinder, Query query);
+        Stream Read(IModelFormatter modelBinder, Query query);
     }
 }

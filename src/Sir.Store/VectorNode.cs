@@ -15,7 +15,6 @@ namespace Sir.Store
         private VectorNode _left;
         private long _vecOffset;
         private long _postingsOffset;
-        private HashSet<ulong> _docIds;
 
         public double Angle { get; set; }
         public double Highscore { get; set; }
@@ -41,6 +40,7 @@ namespace Sir.Store
         }
 
         public uint ValueId { get; set; }
+        public HashSet<ulong> DocIds { get; set; }
 
         public VectorNode() 
             : this('\0'.ToString()) { }
@@ -52,13 +52,13 @@ namespace Sir.Store
 
         public VectorNode(SortedList<char, double> wordVector)
         {
-            _docIds = new HashSet<ulong>();
+            DocIds = new HashSet<ulong>();
             TermVector = wordVector;
         }
 
         public void AddPosting(ulong docId)
         {
-            _docIds.Add(docId);
+            DocIds.Add(docId);
         }
 
         private IEnumerable<byte[]> ToStream()
@@ -94,7 +94,7 @@ namespace Sir.Store
             _postingsOffset = postingsStream.Position;
             _vecOffset = TermVector.Serialize(vectorStream);
 
-            foreach (var docId in _docIds)
+            foreach (var docId in DocIds)
             {
                 var posting = BitConverter.GetBytes(docId);
                 postingsStream.Write(posting, 0, sizeof(ulong));
@@ -288,9 +288,9 @@ namespace Sir.Store
                 TermVector = TermVector.Add(node.TermVector);
             }
 
-            foreach(var id in node._docIds)
+            foreach(var id in node.DocIds)
             {
-                _docIds.Add(id);
+                DocIds.Add(id);
             }
         }
 

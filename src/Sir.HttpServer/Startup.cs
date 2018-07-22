@@ -23,7 +23,7 @@ namespace Sir.HttpServer
             {
                 options.RespectBrowserAcceptHeader = true;
             });
-            ServiceProvider = PluginFactory.Configure(services);
+            ServiceProvider = ServiceConfiguration.Configure(services);
             Directory.SetCurrentDirectory(Path.Combine(Directory.GetCurrentDirectory(), "App_Data"));
         }
 
