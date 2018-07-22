@@ -2,44 +2,77 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace Sir.Store
 {
     public class SessionFactory : IDisposable
     {
         private readonly IDictionary<string, Stream> _streams;
-        private readonly IDictionary<ulong, IDictionary<ulong, byte[]>> _ixs;
         private readonly object Sync = new object();
+        private readonly VectorTree _index;
+        private readonly string _dir;
 
         public bool IsDisposed { get; private set; }
 
-        public SessionFactory()
+        public SessionFactory(string dir)
         {
-            _streams = new Dictionary<string, Stream>();
-            _ixs = new Dictionary<string, BPlusTree<uint, byte[]>>();
+            _streams = new SortedList<string, Stream>();
+            _index = Deserialize(dir);
+            _dir = dir;
         }
 
-        public Session CreateWriteSession(ulong collectionId)
+
+        public static VectorTree Deserialize(string dataDir)
         {
-            return new Session
+            var ix = new SortedList<ulong, SortedList<uint, VectorNode>>();
+
+            foreach (var collectionDir in Directory.GetDirectories(dataDir))
             {
-                Index = GetIndex(string.Format("{0}.ix", collectionId)),
+                var collectionHash = new DirectoryInfo(collectionDir).Name;
+                var collectionId = ulong.Parse(collectionHash);
+                var colIndex = new SortedList<uint, VectorNode>();
+
+                foreach (var ixFileName in Directory.GetFiles(collectionDir, "*.ix"))
+                {
+                    var keyHash = Path.GetFileNameWithoutExtension(new FileInfo(ixFileName).Name);
+                    var keyId = uint.Parse(keyHash);
+                    var key = collectionHash + "_" + keyHash;
+
+                    using (var treeStream = File.OpenRead(Path.Combine(collectionDir, keyHash + ".ix")))
+                    using (var wordStream = File.OpenRead(Path.Combine(collectionDir, "_.vec")))
+                    {
+                        var root = VectorNode.Deserialize(treeStream, wordStream);
+                        colIndex.Add(keyId, root);
+                    }
+                }
+
+                ix.Add(collectionId, colIndex);
+            }
+            return new VectorTree(ix);
+        }
+
+
+        public WriteSession CreateWriteSession(ulong collectionId)
+        {
+            var session = new WriteSession(_dir, collectionId)
+            {
                 ValueStream = GetAppendStream(string.Format("{0}.val", collectionId)),
                 KeyStream = GetAppendStream(string.Format("{0}.key", collectionId)),
                 DocStream = GetAppendStream(string.Format("{0}.doc", collectionId)),
                 ValueIndexStream = GetAppendStream(string.Format("{0}.vix", collectionId)),
                 KeyIndexStream = GetAppendStream(string.Format("{0}.kix", collectionId)),
                 DocIndexStream = GetReadWriteStream(string.Format("{0}.dix", collectionId)),
-                PostingsStream = GetReadWriteStream(string.Format("{0}.pos", collectionId)),
+                PostingsStream = GetReadWriteStream(string.Format("{0}.pos", collectionId))
             };
+
+            session.Index = GetIndex(collectionId);
+            return session;
         }
 
         public Session CreateReadSession(ulong collectionId)
         {
-            return new Session
+            var session = new Session(_dir, collectionId)
             {
-                Index = GetIndex(string.Format("{0}.ix", collectionId)),
                 ValueStream = CreateReadStream(string.Format("{0}.val", collectionId)),
                 KeyStream = CreateReadStream(string.Format("{0}.key", collectionId)),
                 DocStream = CreateReadStream(string.Format("{0}.doc", collectionId)),
@@ -48,35 +81,14 @@ namespace Sir.Store
                 DocIndexStream = GetAppendStream(string.Format("{0}.dix", collectionId)),
                 PostingsStream = CreateReadStream(string.Format("{0}.pos", collectionId))
             };
+
+            session.Index = GetIndex(collectionId);
+            return session;
         }
 
-        private IDictionary<uint, byte[]> GetIndex(string fileName)
+        private SortedList<uint, VectorNode> GetIndex(ulong collectionId)
         {
-            //BPlusTree<uint, byte[]> tree;
-            //if (!_ixs.TryGetValue(fileName, out tree))
-            //{
-            //    lock (Sync)
-            //    {
-            //        if (!_ixs.TryGetValue(fileName, out tree))
-            //        {
-            //            tree = CreateTree(Path.Combine(Directory.GetCurrentDirectory(), fileName));
-            //            _ixs.Add(fileName, tree);
-            //        }
-            //    }
-            //}
-            //return tree;
-            return CreateTree(Path.Combine(Directory.GetCurrentDirectory(), fileName));
-        }
-
-        private static IDictionary<uint, byte[]> CreateTree(string fileName)
-        {
-            var options = new BPlusTree<uint, byte[]>.OptionsV2(PrimitiveSerializer.UInt32, new BytesSerializer());
-
-            options.CalcBTreeOrder(32, 128);
-            options.FileName = fileName;
-            options.CreateFile = CreatePolicy.IfNeeded;
-
-            return new BPlusTree<uint, byte[]>(options);
+            return _index.GetOrCreateIndex(collectionId);
         }
 
         private Stream GetReadWriteStream(string fileName)
@@ -131,23 +143,13 @@ namespace Sir.Store
         {
             if (!IsDisposed)
             {
-                // cleanup
                 foreach (var s in _streams.ToList())
                 {
                     if (s.Value != null) s.Value.Dispose();
                 }
 
-                foreach (var ix in _ixs.ToList())
-                {
-                    if (ix.Value != null) ix.Value.Dispose();
-                }
                 IsDisposed = true;
             }
-        }
-
-        ~SessionFactory()
-        {
-            Dispose();
         }
     }
 }

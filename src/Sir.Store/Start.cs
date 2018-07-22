@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 
 namespace Sir.Store
 {
@@ -7,7 +8,9 @@ namespace Sir.Store
     {
         public void OnApplicationStartup(IServiceCollection services)
         {
-            services.AddSingleton(typeof(SessionFactory), new SessionFactory());
+            services.AddSingleton(typeof(SessionFactory), new SessionFactory(Path.Combine(Directory.GetCurrentDirectory(), "App_Data")));
+            services.AddSingleton(typeof(ITokenizer), new Tokenizer());
+
         }
     }
 

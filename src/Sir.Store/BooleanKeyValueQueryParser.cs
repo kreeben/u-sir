@@ -9,21 +9,21 @@
         {
         }
 
-        public Query Parse(string query)
+        public Query Parse(ulong collectionId,  string query)
         {
             var tokens = query.Split(new[] { ' ', ':' });
             if (tokens.Length > 1)
             {
                 var key = tokens[0];
                 var val = tokens[1];
-                var q = new Query { Term = new Term { Key = key, Value = val } };
-                Parse(q, tokens);
+                var q = new Query { Term = new Term(key, val, collectionId) };
+                Parse(q, tokens, collectionId);
                 return q;
             }
             return null;
         }
 
-        private void Parse(Query query, string[] tokens)
+        private void Parse(Query query, string[] tokens, ulong collectionId)
         {
             for (int i = 2; i < tokens.Length; i++)
             {
@@ -31,17 +31,18 @@
                 var val = tokens[++i];
                 var next = new Query
                 {
-                    Term = new Term { Key = key, Value = val }
+                    Term = new Term(key, val, collectionId)
                 };
 
-                if (next.Term.Value.StartsWith('-'))
+                var strVal = (string)next.Term.Value;
+                if (strVal.StartsWith('-'))
                 {
-                    next.Term.Value = next.Term.Value.Substring(1, next.Term.Value.Length - 1);
+                    next.Term.Value = strVal.Substring(1, strVal.Length - 1);
                     query.Not = next;
                 }
-                else if (next.Term.Value.StartsWith('+'))
+                else if (strVal.StartsWith('+'))
                 {
-                    next.Term.Value = next.Term.Value.Substring(1, next.Term.Value.Length - 1);
+                    next.Term.Value = strVal.Substring(1, strVal.Length - 1);
                     query.And = next;
                 }
                 else

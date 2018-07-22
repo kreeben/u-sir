@@ -16,13 +16,13 @@ namespace Sir.Store
         public uint Append(long offset, int len, byte dataType)
         {
             var position = _stream.Position;
-            var i = (uint)position / _blockSize;
+            var index = (uint)position / _blockSize;
 
             _stream.Write(BitConverter.GetBytes(offset), 0, sizeof(long));
             _stream.Write(BitConverter.GetBytes(len), 0, sizeof(int));
             _stream.Write(BitConverter.GetBytes(dataType), 0, sizeof(byte));
 
-            return i;
+            return index;
         }
     }
 }

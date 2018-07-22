@@ -25,10 +25,10 @@ namespace Sir.CmdApp
 
         public void Analyze(string[] input, VectorTree tree)
         {
-            var node = tree.Find(string.Join(" ", input.Skip(1).ToArray()));
+            var node = tree.Find(0, 0, string.Join(" ", input.Skip(1).ToArray()));
             if (node != null)
             {
-                foreach (var x in node.WordVector)
+                foreach (var x in node.TermVector)
                 {
                     Console.WriteLine("{0}:{1}", x.Key, x.Value);
                 }
@@ -38,7 +38,7 @@ namespace Sir.CmdApp
         public void Find(string[] input, VectorTree tree)
         {
             var q = string.Join("", input.Skip(1).ToArray());
-            var result = tree.Find(q);
+            var result = tree.Find(0, 0, q);
 
             if (result == null)
             {
@@ -61,20 +61,22 @@ namespace Sir.CmdApp
         public void AddFiles(string[] input, VectorTree tree)
         {
             ClearFiles(input, tree);
+
             foreach (var file in Directory.GetFiles(input[1], input[2]))
             {
                 var n = AddFile(file, tree);
                 Console.Write("{0} {1} ", file, n);
             }
-            Console.WriteLine(tree.Visualize());
-            var size = tree.Size();
+            Console.WriteLine(tree.Visualize(0, 0));
+            var size = tree.Size(0, 0);
             Console.WriteLine();
             Console.WriteLine("depth {0} width {1} count: {2}, merges: {3}", size.depth, size.width, tree.Count, tree.MergeCount);
 
             using (var treeStream = File.Create("tree.bin"))
             using (var wordStream = File.Create("word.bin"))
+            using (var posStream = File.Create("pos.bin"))
             {
-                tree.Serialize(treeStream, wordStream);
+                tree.GetNode(0, 0).Serialize(treeStream, wordStream, posStream);
             }
 
             //using (var treeStream = File.OpenRead("tree.bin"))
@@ -92,25 +94,25 @@ namespace Sir.CmdApp
         {
             var text = GetLocalResource(path);
             var tokens = Tokenize(text);
-            return AddInternal(tokens, tree);
+            return AddDocument(path, tokens, tree);
         }
 
         public void AddWebPage(string[] input, VectorTree tree)
         {
             AddWebPage(input[1], tree);
-            Console.WriteLine(tree.Visualize());
+            Console.WriteLine(tree.Visualize(0, 0));
             Console.WriteLine("count: {0}", tree.Count);
             Console.WriteLine("merges: {0}", tree.MergeCount);
-            var size = tree.Size();
+            var size = tree.Size(0, 0);
             Console.WriteLine("depth {0} width {1}", size.depth, size.width);
         }
 
         private void AddWebPage(string url, VectorTree tree)
         {
             var text = GetWebResource(url);
-            AddInternal(Tokenize(text), tree);
-            Console.WriteLine(tree.Visualize());
-            var size = tree.Size();
+            AddDocument(url, Tokenize(text), tree);
+            Console.WriteLine(tree.Visualize(0, 0));
+            var size = tree.Size(0, 0);
             Console.WriteLine();
             Console.WriteLine("depth {0} width {1}", size.depth, size.width);
         }
@@ -118,14 +120,26 @@ namespace Sir.CmdApp
         public void Add(string[]input, VectorTree tree)
         {
             Add(input.Skip(1).ToArray(), tree);
-            Console.WriteLine(tree.Visualize());
-            var size = tree.Size();
+            Console.WriteLine(tree.Visualize(0, 0));
+            var size = tree.Size(0, 0);
             Console.WriteLine();
             Console.WriteLine("depth {0} width {1}", size.depth, size.width);
         }
 
-        private int AddInternal(string[] input, VectorTree tree)
+        private static ulong Hash(string read)
         {
+            UInt64 hashedValue = 3074457345618258791ul;
+            for (int i = 0; i < read.Length; i++)
+            {
+                hashedValue += read[i];
+                hashedValue *= 3074457345618258799ul;
+            }
+            return hashedValue;
+        }
+
+        private int AddDocument(string documentId, string[] input, VectorTree tree)
+        {
+            var docId = Hash(documentId);
             var dic = new SortedList<double, string>();
             var count = tree.Count;
 
@@ -133,11 +147,11 @@ namespace Sir.CmdApp
             {
                 if (string.IsNullOrWhiteSpace(word)) continue;
 
-                tree.Add(word);
+                tree.GetNode(0, 0).Add(word, docId);
 
-                var wordvec = new VectorNode(word).WordVector;
+                var wordvec = new VectorNode(word).TermVector;
 
-                if (wordvec.CosAngle(tree.Find(word).WordVector) < VectorNode.TRUE_ANGLE)
+                if (wordvec.CosAngle(tree.Find(0, 0, word).TermVector) < VectorNode.IdenticalAngle)
                 {
                     throw new Exception("error");
                 }

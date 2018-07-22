@@ -7,13 +7,19 @@ namespace Sir.Store
 {
     public class VectorNode
     {
-        public const double TRUE_ANGLE = 0.9d;
-        public const double FALSE_ANGLE = 0.5d;
+        public const double IdenticalAngle = 0.99d;
+        public const double TrueAngle = 0.9d;
+        public const double FalseAngle = 0.5;
+
         private VectorNode _right;
         private VectorNode _left;
-        private long _vecOffset = -1;
+        private long _vecOffset;
+        private long _postingsOffset;
+        private HashSet<ulong> _docIds;
 
-        public SortedList<char, double> WordVector { get; private set; }
+        public double Angle { get; set; }
+        public double Highscore { get; set; }
+        public SortedList<char, double> TermVector { get; private set; }
         public VectorNode Ancestor { get; set; }
         public VectorNode Right
         {
@@ -33,18 +39,21 @@ namespace Sir.Store
                 _left.Ancestor = this;
             }
         }
-        public double Angle { get; set; }
-        public double Highscore { get; set; }
 
-        public VectorNode() : this('\0'.ToString()) { }
+        public uint ValueId { get; set; }
 
-        public VectorNode(string s) : this(s.ToVector())
+        public VectorNode() 
+            : this('\0'.ToString()) { }
+
+        public VectorNode(string s) 
+            : this(s.ToVector())
         {
         }
 
         public VectorNode(SortedList<char, double> wordVector)
         {
-            WordVector = wordVector;
+            _docIds = new HashSet<ulong>();
+            TermVector = wordVector;
         }
 
         private IEnumerable<byte[]> ToStream()
@@ -70,32 +79,40 @@ namespace Sir.Store
 
             yield return BitConverter.GetBytes(Angle);
             yield return BitConverter.GetBytes(_vecOffset);
-            yield return BitConverter.GetBytes(WordVector.Count);
+            yield return BitConverter.GetBytes(_postingsOffset);
+            yield return BitConverter.GetBytes(TermVector.Count);
             yield return terminator;
         }
 
-        public void Serialize(Stream treeStreem, Stream wordStream)
+        public void Serialize(Stream indexStream, Stream vectorStream, Stream postingsStream)
         {
-            _vecOffset = WordVector.Serialize(wordStream);
+            _postingsOffset = postingsStream.Position;
+            _vecOffset = TermVector.Serialize(vectorStream);
+
+            foreach(var docId in _docIds)
+            {
+                var posting = BitConverter.GetBytes(docId);
+                postingsStream.Write(posting, 0, sizeof(ulong));
+            }
 
             foreach(var buf in ToStream())
             {
-                treeStreem.Write(buf, 0, buf.Length);
+                indexStream.Write(buf, 0, buf.Length);
             }
 
             if (Left != null)
             {
-                Left.Serialize(treeStreem, wordStream);
+                Left.Serialize(indexStream, vectorStream, postingsStream);
             }
             if (Right != null)
             {
-                Right.Serialize(treeStreem, wordStream);
+                Right.Serialize(indexStream, vectorStream, postingsStream);
             }
         }
 
         public static VectorNode Deserialize(Stream treeStream, Stream vectorStream)
         {
-            const int nodeSize = sizeof(double) + sizeof(long) + sizeof(int) + sizeof(byte);
+            const int nodeSize = sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int) + sizeof(byte);
             const int kvpSize = sizeof(char) + sizeof(double);
 
             var nodeBuf = new byte[nodeSize];
@@ -107,13 +124,14 @@ namespace Sir.Store
             }
             
             var angle = BitConverter.ToDouble(nodeBuf, 0);
-            var offset = BitConverter.ToInt64(nodeBuf, sizeof(double));
-            var listCount = BitConverter.ToInt32(nodeBuf, sizeof(double) + sizeof(long));
+            var vecOffset = BitConverter.ToInt64(nodeBuf, sizeof(double));
+            var postingsOffset = BitConverter.ToInt64(nodeBuf, sizeof(double) + sizeof(long));
+            var listCount = BitConverter.ToInt32(nodeBuf, sizeof(double) + sizeof(long) + sizeof(long));
             var terminator = nodeBuf[nodeSize - 1];
             var vec = new SortedList<char, double>();
             var listBuf = new byte[listCount * kvpSize];
 
-            vectorStream.Seek(offset, SeekOrigin.Begin);
+            vectorStream.Seek(vecOffset, SeekOrigin.Begin);
             vectorStream.Read(listBuf, 0, listBuf.Length);
 
             var offs = 0;
@@ -159,7 +177,13 @@ namespace Sir.Store
             return count;
         }
 
-        public VectorNode ClosestMatch(VectorNode node)
+        public VectorNode ClosestMatch(string word)
+        {
+            var node = new VectorNode(word);
+            return ClosestMatch(node);
+        }
+
+        public virtual VectorNode ClosestMatch(VectorNode node)
         {
             var best = this;
             var cursor = this;
@@ -167,13 +191,13 @@ namespace Sir.Store
 
             while (cursor != null)
             {
-                var angle = cursor.WordVector.CosAngle(node.WordVector);
-                if (angle >= TRUE_ANGLE)
+                var angle = cursor.TermVector.CosAngle(node.TermVector);
+                if (angle >= TrueAngle)
                 {
                     cursor.Highscore = angle;
                     return cursor;
                 }
-                else if (angle > FALSE_ANGLE)
+                else if (angle > FalseAngle)
                 {
                     if (angle > highscore)
                     {
@@ -192,16 +216,27 @@ namespace Sir.Store
             return best;
         }
 
-        public bool Add(VectorNode node)
+        public bool Add(string word, ulong docId, uint valueId)
         {
-            node.Angle = node.WordVector.CosAngle(WordVector);
+            var node = new VectorNode(word) { ValueId = valueId };
+            return Add(node, docId);
+        }
 
-            if (node.Angle >= TRUE_ANGLE)
+        /// <summary>
+        /// Add word node to tree.
+        /// </summary>
+        /// <returns>True if the word is unique, false if it's a duplicate, i.e. there is already a word in the tree
+        /// that is similiar enough to the one being added that they're basically equal.</returns>
+        public bool Add(VectorNode node, ulong docId)
+        {
+            node.Angle = node.TermVector.CosAngle(TermVector);
+
+            if (node.Angle >= TrueAngle)
             {
-                Merge(node);
+                Merge(node, docId);
                 return false;
             }
-            else if (node.Angle <= FALSE_ANGLE)
+            else if (node.Angle <= FalseAngle)
             {
                 if (Right == null)
                 {
@@ -210,7 +245,7 @@ namespace Sir.Store
                 }
                 else
                 {
-                    return Right.ClosestMatch(node).Add(node);
+                    return Right.ClosestMatch(node).Add(node, docId);
                 }
             }
             else
@@ -222,7 +257,7 @@ namespace Sir.Store
                 }
                 else
                 {
-                    return Left.ClosestMatch(node).Add(node);
+                    return Left.ClosestMatch(node).Add(node, docId);
                 }
             }
         }
@@ -238,12 +273,16 @@ namespace Sir.Store
             return cursor;
         }
 
-
-
-        public void Merge(VectorNode node)
+        public void Merge(VectorNode node, ulong docId)
         {
-            //WordVector = WordVector.Add(node.WordVector);
-            //Angle = WordVector.CosAngle(Ancestor.WordVector);
+            var angle = node.TermVector.CosAngle(TermVector);
+
+            if (angle < 1)
+            {
+                TermVector = TermVector.Add(node.TermVector);
+            }
+
+            _docIds.Add(docId);
         }
 
         public string Visualize()
@@ -275,14 +314,42 @@ namespace Sir.Store
                 Visualize(node.Right, output, depth);
         }
 
+        public (int depth, int width) Size()
+        {
+            var root = this;
+            var width = 0;
+            var depth = 0;
+            var node = root.Right;
+
+            while (node != null)
+            {
+                var d = node.Depth();
+                if (d > depth)
+                {
+                    depth = d;
+                }
+                width++;
+                node = node.Right;
+            }
+
+            return (depth, width);
+        }
+
         public override string ToString()
         {
             var w = new StringBuilder();
-            foreach (var c in WordVector)
+            foreach (var c in TermVector)
             {
                 w.Append(c.Key);
             }
             return w.ToString();
         }
+    }
+
+    public enum NodeType
+    {
+        Collection = 0,
+        Key = 1,
+        Word = 2
     }
 }

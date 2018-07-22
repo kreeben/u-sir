@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Sir.Json
 {
-    public class JsonParser : IModelParser
+    public class JsonParser : IModelBinder
     {
         public string ContentType => "application/json";
 

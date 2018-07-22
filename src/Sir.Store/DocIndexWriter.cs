@@ -18,10 +18,6 @@ namespace Sir.Store
 
             if (read == 0)
             {
-                // Because the stream is empty we can assume it is new.
-                // Write an empty block so that docId starts at 1 instead of 0.
-                // Because 0 is interpreted as "uninitialized data" in the postings file.
-
                 stream.SetLength(_blockSize);
                 stream.Seek(0, SeekOrigin.End);
             }
@@ -31,15 +27,19 @@ namespace Sir.Store
             }
         }
 
+        public ulong GetNextDocId()
+        {
+            return (ulong)_stream.Position / (ulong)_blockSize;
+        }
+
         public ulong Append(long offset, int len)
         {
-            var position = _stream.Position;
-            var i = (ulong)position / (ulong)_blockSize;
+            var id = GetNextDocId();
 
             _stream.Write(BitConverter.GetBytes(offset), 0, sizeof(long));
             _stream.Write(BitConverter.GetBytes(len), 0, sizeof(int));
 
-            return i;
+            return id;
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Sir.HttpServer
             {
                 plugin.Dispose();
             }
-            foreach (var plugin in ServiceProvider.GetServices<IModelParser>())
+            foreach (var plugin in ServiceProvider.GetServices<IModelBinder>())
             {
                 plugin.Dispose();
             }

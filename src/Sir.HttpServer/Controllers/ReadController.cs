@@ -13,9 +13,9 @@ namespace Sir.HttpServer.Controllers
             _plugins = plugins;
         }
 
-        [HttpGet("read/{*id}")]
-        [HttpPut("read/{*id}")]
-        public HttpResponseMessage Get(string id, string query)
+        [HttpGet("read/{*collectionId}")]
+        [HttpPut("read/{*collectionId}")]
+        public HttpResponseMessage Get(string collectionId, string query)
         {
             var contentType = Request.ContentType;
             var accepts = Request.Headers["Accept"];
@@ -33,7 +33,7 @@ namespace Sir.HttpServer.Controllers
             }
 
             var queryParser = _plugins.Get<IQueryParser>(contentType);
-            var modelBinder = _plugins.Get<IModelParser>(accepts);
+            var modelBinder = _plugins.Get<IModelBinder>(accepts);
             var reader = _plugins.Get<IReader>(accepts);
 
             if (queryParser == null || modelBinder == null || reader == null)
@@ -41,9 +41,11 @@ namespace Sir.HttpServer.Controllers
                 return new HttpResponseMessage(System.Net.HttpStatusCode.UnsupportedMediaType);
             }
 
-            var parsedQuery = string.IsNullOrWhiteSpace(query) ? null : queryParser.Parse(query);
+            var parsedQuery = string.IsNullOrWhiteSpace(query) ? null 
+                : queryParser.Parse(collectionId.ToHash(), query);
+
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            var outputStream = reader.Read(id, modelBinder, parsedQuery);
+            var outputStream = reader.Read(modelBinder, parsedQuery);
             response.Content = new StreamContent(outputStream);
             return response;
         }

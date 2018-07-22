@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -7,6 +6,11 @@ namespace Sir.Store
 {
     public class Session : IDisposable
     {
+        protected readonly SortedList<ulong, uint> _keys;
+        protected readonly string _dir;
+
+        public ulong CollectionId { get; private set; }
+        public SortedList<uint, VectorNode> Index { get; set; }
         public Stream ValueStream { get; set; }
         public Stream KeyStream { get; set; }
         public Stream DocStream { get; set; }
@@ -14,57 +18,64 @@ namespace Sir.Store
         public Stream KeyIndexStream { get; set; }
         public Stream DocIndexStream { get; set; }
         public Stream PostingsStream { get; set; }
+        public Stream VectorStream { get; set; }
+        public Stream IndexStream { get; set; }
 
-        public (uint keyId, uint valId, long posOffset) Get(uint term)
+        public Session(string directory, ulong collectionId)
         {
-            uint keyId, valId;
-            long posOffset;
+            _dir = directory;
+            _keys = LoadKeyMap();
+            CollectionId = collectionId;
+        }
 
-            if (!TryGet(term, out keyId, out valId, out posOffset))
+        protected VectorNode GetKeyIndex(ulong key)
+        {
+            uint keyId;
+            if(!TryGetKeyId(key, out keyId))
             {
-                throw new InvalidOperationException();
+                return null;
+            }
+            VectorNode root;
+            if(!Index.TryGetValue(keyId, out root))
+            {
+                return null;
+            }
+            return root;
+        }
+
+        private bool TryGetKeyId(ulong key, out uint keyId)
+        {
+            if(!_keys.TryGetValue(key, out keyId))
+            {
+                keyId = 0;
+                return false;
+            }
+            return true;
+        }
+
+        private SortedList<ulong, uint> LoadKeyMap()
+        {
+            var keys = new SortedList<ulong, uint>();
+
+            using (var stream = File.OpenRead(Path.Combine(_dir, "_.kmap")))
+            {
+                uint i = 0;
+                var buf = new byte[sizeof(uint)];
+                var read = stream.Read(buf, 0, buf.Length);
+
+                while (read > 0)
+                {
+                    keys.Add(BitConverter.ToUInt32(buf, 0), i++);
+
+                    read = stream.Read(buf, 0, buf.Length);
+                }
             }
 
-            return (keyId, valId, posOffset);
-        }
-
-        public bool TryGet(uint term, out uint keyId, out uint valId, out long posOffset)
-        {
-            //byte[] buf;
-            //if (!Index.TryGetValue(term, out buf))
-            //{
-            //    keyId = 0;
-            //    valId = 0;
-            //    posOffset = 0;
-
-            //    return false;
-            //}
-
-            //keyId = BitConverter.ToUInt32(buf, 0);
-            //valId = BitConverter.ToUInt32(buf, sizeof(uint));
-            //posOffset = BitConverter.ToInt64(buf, sizeof(uint) + sizeof(uint));
-
-            //return true;
-            throw new NotImplementedException();
-        }
-
-        public void Add(uint term, uint keyId, uint valId, long posOffset)
-        {
-            //var keyIdBuf = BitConverter.GetBytes(keyId);
-            //var valIdBuf = BitConverter.GetBytes(valId);
-            //var posOffsetBuf = BitConverter.GetBytes(posOffset);
-
-            //var buf = new byte[sizeof(uint) + sizeof(uint) + sizeof(long)];
-            //Buffer.BlockCopy(keyIdBuf, 0, buf, 0, keyIdBuf.Length);
-            //Buffer.BlockCopy(valIdBuf, 0, buf, sizeof(uint), valIdBuf.Length);
-            //Buffer.BlockCopy(posOffsetBuf, 0, buf, sizeof(uint) + sizeof(uint), posOffsetBuf.Length);
-
-            //Index.Add(term, buf);
+            return keys;
         }
 
         public void Dispose()
         {
         }
     }
-
 }

@@ -9,23 +9,12 @@ namespace Sir.CmdApp
     {
         static void Main(string[] args)
         {
-            var tree = new VectorTree();
+            var sessionFactory = new SessionFactory(Directory.GetCurrentDirectory());
+            var store = new Store.Store(sessionFactory, new Tokenizer());
             var timer = new Stopwatch();
             string[] userInput = args.Length == 0 ? null : args;
             var methods = Inspector.GetMethods(typeof(App));
             var app = new App();
-
-            //if (File.Exists("tree.bin") && File.Exists("word.bin"))
-            //{
-            //    timer.Start();
-            //    using (var treeStream = File.OpenRead("tree.bin"))
-            //    using (var wordStream = File.OpenRead("word.bin"))
-            //    {
-            //        tree = VectorTree.Load(treeStream, wordStream);
-            //    }
-            //    timer.Stop();
-            //    Console.WriteLine("loaded tree in {0} ticks", timer.ElapsedTicks);
-            //}
 
             while (true)
             {
@@ -45,7 +34,7 @@ namespace Sir.CmdApp
                     if (method != null)
                     {
                         timer.Restart();
-                        method.Invoke(app, new object[] { userInput, tree });
+                        method.Invoke(app, new object[] { userInput, store });
                         timer.Stop();
                     }
 

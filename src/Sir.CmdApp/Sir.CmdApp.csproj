@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sir.Store\Sir.Store.csproj" />
+    <ProjectReference Include="..\Sir\Sir.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="YesNoParser">
       <HintPath>..\..\..\yesnoparser\src\YesNoParser\bin\Debug\netcoreapp2.0\YesNoParser.dll</HintPath>
     </Reference>

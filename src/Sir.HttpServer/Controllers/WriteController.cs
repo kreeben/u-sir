@@ -23,10 +23,10 @@ namespace Sir.HttpServer.Controllers
                 throw new ArgumentException("message", nameof(collectionId));
             }
 
-            var modelParser = _plugins.Get<IModelParser>(Request.ContentType);
+            var binder = _plugins.Get<IModelBinder>(Request.ContentType);
             var writers = _plugins.All<IWriter>(Request.ContentType);
 
-            if (modelParser == null || writers == null)
+            if (binder == null || writers == null)
             {
                 return StatusCode(415); // Media type not supported
             }
@@ -35,7 +35,7 @@ namespace Sir.HttpServer.Controllers
 
             try
             {
-                data = modelParser.Parse(Request.Body);
+                data = binder.Parse(Request.Body);
             }
             catch (Exception wtf)
             {

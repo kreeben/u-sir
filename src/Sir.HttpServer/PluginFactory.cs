@@ -26,16 +26,13 @@ namespace Sir.HttpServer
                         var contract = firstInterface ?? type;
                         var lastInterface = interfaces.LastOrDefault() ?? contract;
 
-                        if (interfaces.Contains(typeof(IPlugin)))
-                        {
-                            services.Add(new ServiceDescriptor(
-                                contract, type, ServiceLifetime.Singleton));
-                        }
-                        else if (interfaces.Contains(typeof(IPluginStart)))
+                        if (interfaces.Contains(typeof(IPluginStart)))
                         {
                             ((IPluginStart)Activator.CreateInstance(type)).OnApplicationStartup(services);
+
                         }
-                        else if (interfaces.Contains(typeof(IPluginStop)))
+                        else if (interfaces.Contains(typeof(IPluginStop)) || 
+                            interfaces.Contains(typeof(IPlugin)))
                         {
                             services.Add(new ServiceDescriptor(
                                 contract, type, ServiceLifetime.Singleton));
@@ -49,7 +46,7 @@ namespace Sir.HttpServer
             var serviceProvider = services.BuildServiceProvider();
             var plugins = serviceProvider.GetService<PluginCollection>();
 
-            foreach (var service in serviceProvider.GetServices<IModelParser>())
+            foreach (var service in serviceProvider.GetServices<IModelBinder>())
             {
                 plugins.Add(service.ContentType, service);
             }

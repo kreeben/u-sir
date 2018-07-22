@@ -1,9 +1,10 @@
 # Sir.Core
 
-Framework for creating read and write data pipelines. 
+Framework for modelling read and write data pipelines. 
 
 Useful for when you want to
 
-- aggregate data from many sources using a single query language
-- dispatch data to many targets
-- understand many formats
+- aggregate data from many sources 
+- dispatch data to many targets 
+- parse or serve data in multiple formats 
+- use one query langue for all data

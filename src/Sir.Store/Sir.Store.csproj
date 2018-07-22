@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy $(TargetPath) ..\Sir.HttpServer\$(OutDir)\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)$(ProjectName).plugin.pdb ..\Sir.HttpServer\$(OutDir)\$(ProjectName).plugin.pdb&#xD;&#xA;copy $(TargetDir)CSharpTest.Net.Collections.dll ..\Sir.HttpServer\$(OutDir)\CSharpTest.Net.Collections.dll" />
+    <Exec Command="copy $(TargetPath) ..\Sir.HttpServer\$(OutDir)\$(TargetFileName)&#xD;&#xA;copy $(TargetDir)$(ProjectName).plugin.pdb ..\Sir.HttpServer\$(OutDir)\$(ProjectName).plugin.pdb" />
   </Target>
 
 </Project>

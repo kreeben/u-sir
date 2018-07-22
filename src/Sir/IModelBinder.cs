@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Sir
 {
-    public interface IModelParser : IPlugin
+    public interface IModelBinder : IPlugin
     {   
         IList<IModel> Parse(Stream data);
     }

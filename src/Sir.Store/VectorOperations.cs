@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Sir.Store
 {
-    public static class VectorHelper
+    public static class VectorOperations
     {
         public static long Serialize(this SortedList<char, double> vec, Stream stream)
         {
@@ -99,12 +99,12 @@ namespace Sir.Store
             return product;
         }
 
-        public static SortedList<char, int> Add(this SortedList<char, int> vec1, SortedList<char, int> vec2)
+        public static SortedList<char, double> Add(this SortedList<char, double> vec1, SortedList<char, double> vec2)
         {
-            var result = new SortedList<char, int>();
+            var result = new SortedList<char, double>();
             foreach (var x in vec1)
             {
-                int val;
+                double val;
                 if (vec2.TryGetValue(x.Key, out val))
                 {
                     result[x.Key] = val + x.Value;
@@ -193,25 +193,30 @@ namespace Sir.Store
             return Math.Sqrt(Dot(vector, vector));
         }
 
-        public static SortedList<char, double> Components(this string s)
+        public static ulong Dot(char[] sparse1, char[] sparse2)
         {
-            var word = new VectorNode(s);
-            var basevectors = new SortedList<char, SortedList<char, double>>();
-            var i = 0;
-            foreach (var c in word.WordVector.Keys)
+            char[] longest, shortest;
+            ulong result = 0;
+
+            if (sparse1.Length > sparse2.Length)
             {
-                var basevec = new SortedList<char, double>();
-                basevec[c] = 1;
-                basevectors[c] = basevec;
+                longest = sparse1;
+                shortest = sparse2;
             }
-            var components = new SortedList<char, double>();
-            i = 0;
-            foreach (var basevec in basevectors)
+            else
             {
-                var angle = word.WordVector.CosAngle(basevec.Value);
-                components[basevec.Key] = angle;
+                longest = sparse2;
+                shortest = sparse1;
             }
-            return components;
+
+            for (int i = 0; i < longest.Length; i++)
+            {
+                var x = longest[i];
+                var y = shortest.Length <= i ? char.MinValue : shortest[i];
+                result += (uint)x * y;
+            }
+
+            return result;
         }
     }
 }

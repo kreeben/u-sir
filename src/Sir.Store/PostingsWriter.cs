@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Sir.Store
 {
     public class PostingsWriter
     {
-        private readonly Stream _stream;
         private static int PAGE_SIZE = 4096;
-        private static int SLOTS_PER_PAGE = 64;
+        private static int SLOTS_PER_PAGE = 511;
+
+        private readonly Stream _stream;
+        private SortedList<long, byte[]> _pages;
 
         public PostingsWriter(Stream stream)
         {
             _stream = stream;
             _stream.Seek(0, SeekOrigin.End);
+            _pages = new SortedList<long, byte[]>();
         }
 
         public long AllocatePage()
@@ -23,12 +27,17 @@ namespace Sir.Store
 
             _stream.SetLength(pos + PAGE_SIZE);
 
+            var page = new byte[PAGE_SIZE];
+            _stream.Read(page, 0, PAGE_SIZE);
+            _pages.Add(pos, page);
+
             return pos;
         }
 
-        public long Append(long offset, ulong documentId)
+        public void Append(long offset, ulong documentId)
         {
-            var page = new byte[4096];
+            var page = _pages[offset];
+            
             ulong slot = 0;
             int pos = 0;
 

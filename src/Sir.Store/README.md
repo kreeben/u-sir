@@ -1,6 +1,6 @@
 # Sir.Store
 
-In-process document database. Keys and values are IComparable.
+In-process document database.
 
 ## File format
 
@@ -32,6 +32,9 @@ In-process document database. Keys and values are IComparable.
 
 	[doc_id doc_id next_page_offset] [doc_id       ]...
 
-### .ix
+### .kmap
 
-	(keyval_dot)/key_id val_id pos_offset
+	(key_id) key_hash
+
+### .ix
+### .vec
