@@ -6,8 +6,9 @@ namespace Sir.Store
 {
     public class Session : IDisposable
     {
-        protected readonly SortedList<ulong, uint> _keys;
-        protected readonly string _dir;
+        private readonly SortedList<ulong, uint> _keys;
+
+        protected readonly string Dir;
 
         public ulong CollectionId { get; private set; }
         public SortedList<uint, VectorNode> Index { get; set; }
@@ -23,9 +24,19 @@ namespace Sir.Store
 
         public Session(string directory, ulong collectionId)
         {
-            _dir = directory;
+            Dir = directory;
             _keys = LoadKeyMap();
             CollectionId = collectionId;
+        }
+
+        public void AddKey(ulong keyHash, uint keyId)
+        {
+            _keys.Add(keyHash, keyId);
+        }
+
+        public uint GetKey(ulong keyHash)
+        {
+            return _keys[keyHash];
         }
 
         protected VectorNode GetKeyIndex(ulong key)
@@ -57,7 +68,7 @@ namespace Sir.Store
         {
             var keys = new SortedList<ulong, uint>();
 
-            using (var stream = File.OpenRead(Path.Combine(_dir, "_.kmap")))
+            using (var stream = new FileStream(Path.Combine(Dir, "_.kmap"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
                 uint i = 0;
                 var buf = new byte[sizeof(uint)];

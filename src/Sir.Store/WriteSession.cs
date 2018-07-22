@@ -54,7 +54,7 @@ namespace Sir.Store
                         // store key
                         var keyInfo = keys.Append(key);
                         keyId = keyIx.Append(keyInfo.offset, keyInfo.len, keyInfo.dataType);
-                        _keys.Add(keyHash, keyId);
+                        AddKey(keyHash, keyId);
 
                         // add new index to global in-memory tree
                         fieldIndex = new VectorNode();
@@ -62,7 +62,7 @@ namespace Sir.Store
                     }
                     else
                     {
-                        keyId = _keys[keyHash];
+                        keyId = GetKey(keyHash);
                     }
 
                     foreach (var term in terms)

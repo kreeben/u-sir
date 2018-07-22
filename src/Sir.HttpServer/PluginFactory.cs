@@ -22,20 +22,23 @@ namespace Sir.HttpServer
                     if (!type.IsInterface)
                     {
                         var interfaces = type.GetInterfaces();
-                        var firstInterface = interfaces.FirstOrDefault();
-                        var contract = firstInterface ?? type;
-                        var lastInterface = interfaces.LastOrDefault() ?? contract;
+                        //var firstInterface = interfaces.FirstOrDefault();
+                        //var contract = firstInterface ?? type;
+                        //var lastInterface = interfaces.LastOrDefault() ?? contract;
 
                         if (interfaces.Contains(typeof(IPluginStart)))
                         {
                             ((IPluginStart)Activator.CreateInstance(type)).OnApplicationStartup(services);
-
                         }
                         else if (interfaces.Contains(typeof(IPluginStop)) || 
                             interfaces.Contains(typeof(IPlugin)))
                         {
-                            services.Add(new ServiceDescriptor(
+                            foreach(var contract in interfaces)
+                            {
+                                services.Add(new ServiceDescriptor(
                                 contract, type, ServiceLifetime.Singleton));
+                            }
+                            
                         }
                     }
                 }

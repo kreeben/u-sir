@@ -10,7 +10,6 @@ namespace Sir.Store
         {
             services.AddSingleton(typeof(SessionFactory), new SessionFactory(Path.Combine(Directory.GetCurrentDirectory(), "App_Data")));
             services.AddSingleton(typeof(ITokenizer), new Tokenizer());
-
         }
     }
 

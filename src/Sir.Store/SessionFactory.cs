@@ -21,7 +21,6 @@ namespace Sir.Store
             _dir = dir;
         }
 
-
         public static VectorTree Deserialize(string dataDir)
         {
             var ix = new SortedList<ulong, SortedList<uint, VectorNode>>();
@@ -56,13 +55,13 @@ namespace Sir.Store
         {
             var session = new WriteSession(_dir, collectionId)
             {
-                ValueStream = GetAppendStream(string.Format("{0}.val", collectionId)),
-                KeyStream = GetAppendStream(string.Format("{0}.key", collectionId)),
-                DocStream = GetAppendStream(string.Format("{0}.doc", collectionId)),
-                ValueIndexStream = GetAppendStream(string.Format("{0}.vix", collectionId)),
-                KeyIndexStream = GetAppendStream(string.Format("{0}.kix", collectionId)),
-                DocIndexStream = GetReadWriteStream(string.Format("{0}.dix", collectionId)),
-                PostingsStream = GetReadWriteStream(string.Format("{0}.pos", collectionId))
+                ValueStream = CreateAppendStream(string.Format("{0}.val", collectionId)),
+                KeyStream = CreateAppendStream(string.Format("{0}.key", collectionId)),
+                DocStream = CreateAppendStream(string.Format("{0}.doc", collectionId)),
+                ValueIndexStream = CreateAppendStream(string.Format("{0}.vix", collectionId)),
+                KeyIndexStream = CreateAppendStream(string.Format("{0}.kix", collectionId)),
+                DocIndexStream = CreateReadWriteStream(string.Format("{0}.dix", collectionId)),
+                PostingsStream = CreateReadWriteStream(string.Format("{0}.pos", collectionId))
             };
 
             session.Index = GetIndex(collectionId);
@@ -76,9 +75,9 @@ namespace Sir.Store
                 ValueStream = CreateReadStream(string.Format("{0}.val", collectionId)),
                 KeyStream = CreateReadStream(string.Format("{0}.key", collectionId)),
                 DocStream = CreateReadStream(string.Format("{0}.doc", collectionId)),
-                ValueIndexStream = GetAppendStream(string.Format("{0}.vix", collectionId)),
-                KeyIndexStream = GetAppendStream(string.Format("{0}.kix", collectionId)),
-                DocIndexStream = GetAppendStream(string.Format("{0}.dix", collectionId)),
+                ValueIndexStream = CreateAppendStream(string.Format("{0}.vix", collectionId)),
+                KeyIndexStream = CreateAppendStream(string.Format("{0}.kix", collectionId)),
+                DocIndexStream = CreateAppendStream(string.Format("{0}.dix", collectionId)),
                 PostingsStream = CreateReadStream(string.Format("{0}.pos", collectionId))
             };
 
@@ -91,7 +90,7 @@ namespace Sir.Store
             return _index.GetOrCreateIndex(collectionId);
         }
 
-        private Stream GetReadWriteStream(string fileName)
+        private Stream CreateReadWriteStream(string fileName)
         {
             Stream stream;
             if (!_streams.TryGetValue(fileName, out stream))
@@ -108,7 +107,7 @@ namespace Sir.Store
             return stream;
         }
 
-        private Stream GetAppendStream(string fileName)
+        private Stream CreateAppendStream(string fileName)
         {
             // https://stackoverflow.com/questions/122362/how-to-empty-flush-windows-read-disk-cache-in-c
             //const FileOptions FileFlagNoBuffering = (FileOptions)0x20000000;
