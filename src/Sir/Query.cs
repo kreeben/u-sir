@@ -1,5 +1,6 @@
 ﻿namespace Sir
 {
+    [System.Diagnostics.DebuggerDisplay("{Term}")]
     public class Query
     {
         public ulong CollectionId { get; set; }

@@ -2,7 +2,7 @@
 {
     public class BooleanKeyValueQueryParser : IQueryParser
     {
-        public string ContentType => "text/plain";
+        public string ContentType => "*";
         public int Ordinal => 0;
 
         public void Dispose()

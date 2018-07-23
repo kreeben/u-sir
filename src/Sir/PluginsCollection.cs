@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace Sir
 {
-    public class PluginCollection : IDisposable
+    public class PluginsCollection : IDisposable
     {
         private readonly IDictionary<string, IDictionary<Type, IList<IPlugin>>> _services;
 
-        public PluginCollection()
+        public PluginsCollection()
         {
             _services = new Dictionary<string, IDictionary<Type, IList<IPlugin>>>();
         }
@@ -40,40 +40,38 @@ namespace Sir
             return All<T>(key).FirstOrDefault();
         }
 
-        public IEnumerable<T> All<T>(string key) where T : IPlugin
+        public IEnumerable<T> All<T>(string key, bool includeWildcardServices = true) where T : IPlugin
         {
-            foreach (var s in Services<T>(string.Empty))
+            if (includeWildcardServices)
             {
-                yield return s;
+                foreach (var s in Services<T>("*"))
+                {
+                    yield return (T)s;
+                }
             }
+            
             foreach (var s in Services<T>(key))
             {
-                yield return s;
+                yield return (T)s;
             }
         }
 
         private IEnumerable<T> Services<T>(string key) where T : IPlugin
         {
+            var filter = typeof(T);
+
             IDictionary<Type, IList<IPlugin>> services;
 
             if (_services.TryGetValue(key, out services))
             {
-                IList<IPlugin> plugins;
-                if (services.TryGetValue(typeof(T), out plugins))
+                if (filter == typeof(IPlugin))
                 {
-                    foreach(var p in plugins)
-                    {
-                        if (p != null)
-                            yield return (T)p;
-                    }
+                    return services.Values.SelectMany(x => x).Cast<T>();
                 }
-            }
-        }
 
-        ~PluginCollection()
-        {
-            if (_services.Count > 0)
-                Dispose();
+                return services.Values.SelectMany(x => x).Where(x => (x is T)).Cast<T>();
+            }
+            return Enumerable.Empty<T>();
         }
 
         public void Dispose()

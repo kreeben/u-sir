@@ -11,9 +11,9 @@ namespace Sir.HttpServer.Controllers
     [Route("io")]
     public class IOController : Controller
     {
-        private PluginCollection _plugins;
+        private PluginsCollection _plugins;
 
-        public IOController(PluginCollection plugins)
+        public IOController(PluginsCollection plugins)
         {
             _plugins = plugins;
         }

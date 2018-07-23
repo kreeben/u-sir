@@ -7,7 +7,7 @@ namespace Sir.Store
 {
     public class Store : IReader, IWriter
     {
-        public string ContentType => string.Empty;
+        public string ContentType => "*";
 
         private readonly ProducerConsumerQueue<WriteTransaction> _writeQueue;
         private readonly SessionFactory _sessionFactory;
@@ -72,6 +72,8 @@ namespace Sir.Store
 
             if (_sessionFactory.TryGetKeyId(keyHash, out keyId))
             {
+                query.Term.KeyId = keyId;
+
                 using (var session = _sessionFactory.CreateReadSession(query.CollectionId))
                 {
                     var unformatted = session.Read(query);

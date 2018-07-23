@@ -59,12 +59,12 @@ namespace Sir.Store
             using (var stream = new FileStream(Path.Combine(dir, "_.kmap"), FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
             {
                 uint i = 0;
-                var buf = new byte[sizeof(uint)];
+                var buf = new byte[sizeof(ulong)];
                 var read = stream.Read(buf, 0, buf.Length);
 
                 while (read > 0)
                 {
-                    keys.Add(BitConverter.ToUInt32(buf, 0), i++);
+                    keys.Add(BitConverter.ToUInt64(buf, 0), i++);
 
                     read = stream.Read(buf, 0, buf.Length);
                 }
@@ -77,28 +77,28 @@ namespace Sir.Store
         {
             var ix = new SortedList<ulong, SortedList<uint, VectorNode>>();
 
-            foreach (var collectionDir in Directory.GetDirectories(dir))
+            foreach (var ixFileName in Directory.GetFiles(dir, "*.ix"))
             {
-                var collectionHash = new DirectoryInfo(collectionDir).Name;
-                var collectionId = ulong.Parse(collectionHash);
-                var colIndex = new SortedList<uint, VectorNode>();
+                var name = Path.GetFileNameWithoutExtension(ixFileName).Split(".", StringSplitOptions.RemoveEmptyEntries);
+                var colHash = ulong.Parse(name[0]);
+                var keyId = uint.Parse(name[1]);
+                SortedList<uint, VectorNode> colIx;
 
-                foreach (var ixFileName in Directory.GetFiles(collectionDir, "*.ix"))
+                if (!ix.TryGetValue(colHash, out colIx))
                 {
-                    var keyHash = Path.GetFileNameWithoutExtension(new FileInfo(ixFileName).Name);
-                    var keyId = uint.Parse(keyHash);
-                    var key = collectionHash + "_" + keyHash;
-
-                    using (var treeStream = File.OpenRead(Path.Combine(collectionDir, keyHash + ".ix")))
-                    using (var wordStream = File.OpenRead(Path.Combine(collectionDir, "_.vec")))
-                    {
-                        var root = VectorNode.Deserialize(treeStream, wordStream);
-                        colIndex.Add(keyId, root);
-                    }
+                    colIx = new SortedList<uint, VectorNode>();
+                    ix.Add(colHash, colIx);
                 }
 
-                ix.Add(collectionId, colIndex);
+                using (var treeStream = File.OpenRead(ixFileName))
+                using (var vecStream = File.OpenRead(Path.Combine(dir, string.Format("{0}.vec", colHash))))
+                {
+                    var root = VectorNode.Deserialize(treeStream, vecStream);
+
+                    ix[colHash].Add(keyId, root);
+                }
             }
+
             return new VectorTree(ix);
         }
 

@@ -8,9 +8,9 @@ namespace Sir.HttpServer.Controllers
     [Route("plugins")]
     public class PluginsController : Controller
     {
-        private PluginCollection _writeActions;
+        private PluginsCollection _writeActions;
 
-        public PluginsController(PluginCollection writeActions)
+        public PluginsController(PluginsCollection writeActions)
         {
             _writeActions = writeActions;
         }
@@ -21,7 +21,8 @@ namespace Sir.HttpServer.Controllers
             return _writeActions.Keys.Select(s => new PluginModel
             {
                 ContentType = s,
-                Actions = _writeActions.All<IPlugin>(s).Select(a=>a.ContentType)
+                Actions = _writeActions.All<IPlugin>(s, includeWildcardServices:false)
+                    .Select(a=>a.GetType().ToString())
             });
         }
 

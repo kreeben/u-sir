@@ -41,31 +41,34 @@ namespace Sir.HttpServer
 
         private void OnShutdown()
         {
-            foreach(var stopper in ServiceProvider.GetServices<IPluginStop>())
+            foreach (var stopper in ServiceProvider.GetServices<IPluginStop>())
             {
                 stopper.OnApplicationShutdown(ServiceProvider);
             }
 
-            foreach(var plugin in ServiceProvider.GetServices<IWriter>())
-            {
-                plugin.Dispose();
-            }
-            foreach (var plugin in ServiceProvider.GetServices<IReader>())
-            {
-                plugin.Dispose();
-            }
-            foreach (var plugin in ServiceProvider.GetServices<IModelFormatter>())
-            {
-                plugin.Dispose();
-            }
-            foreach (var plugin in ServiceProvider.GetServices<IModelBinder>())
-            {
-                plugin.Dispose();
-            }
-            foreach (var plugin in ServiceProvider.GetServices<IQueryParser>())
-            {
-                plugin.Dispose();
-            }
+            var plugins = ServiceProvider.GetService<PluginsCollection>();
+            plugins.Dispose();
+
+            //foreach(var plugin in ServiceProvider.GetServices<IWriter>())
+            //{
+            //    plugin.Dispose();
+            //}
+            //foreach (var plugin in ServiceProvider.GetServices<IReader>())
+            //{
+            //    plugin.Dispose();
+            //}
+            //foreach (var plugin in ServiceProvider.GetServices<IModelFormatter>())
+            //{
+            //    plugin.Dispose();
+            //}
+            //foreach (var plugin in ServiceProvider.GetServices<IModelBinder>())
+            //{
+            //    plugin.Dispose();
+            //}
+            //foreach (var plugin in ServiceProvider.GetServices<IQueryParser>())
+            //{
+            //    plugin.Dispose();
+            //}
         }
     }
 }

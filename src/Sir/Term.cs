@@ -2,6 +2,7 @@
 
 namespace Sir
 {
+    [System.Diagnostics.DebuggerDisplay("{Key}:{Value}")]
     public class Term
     {
         public IComparable Key { get; private set; }
