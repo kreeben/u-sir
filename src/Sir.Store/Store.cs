@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sir.Store
 {
@@ -48,7 +49,7 @@ namespace Sir.Store
             }
         }
 
-        public Stream Read(IModelFormatter modelFormatter, Query query)
+        public IEnumerable<IModel> Read(Query query)
         {
             ulong keyHash = query.Term.Key.ToString().ToHash();
             uint keyId;
@@ -57,12 +58,27 @@ namespace Sir.Store
             {
                 using (var session = _sessionFactory.CreateReadSession(query.CollectionId))
                 {
-                    var ix = session.GetIndex(keyHash);
-                    var match = ix.ClosestMatch(query.Term.Value.ToString());
-
+                    return session.Read(query);
                 }
             }
-            
+
+            return Enumerable.Empty<IModel>();
+        }
+
+        public void Read(IModelFormatter modelFormatter, Query query, Stream output)
+        {
+            ulong keyHash = query.Term.Key.ToString().ToHash();
+            uint keyId;
+
+            if (_sessionFactory.TryGetKeyId(keyHash, out keyId))
+            {
+                using (var session = _sessionFactory.CreateReadSession(query.CollectionId))
+                {
+                    var unformatted = session.Read(query);
+
+                    modelFormatter.Format(unformatted, output);
+                }
+            }
         }
     }
 }

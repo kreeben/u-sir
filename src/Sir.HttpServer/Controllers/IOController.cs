@@ -94,7 +94,9 @@ namespace Sir.HttpServer.Controllers
             var parsedQuery = queryParser.Parse(query);
             parsedQuery.CollectionId = collectionId.ToHash();
 
-            var outputStream = reader.Read(modelBinder, parsedQuery);
+            var outputStream = new MemoryStream();
+            reader.Read(modelBinder, parsedQuery, outputStream);
+
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             response.Content = new StreamContent(outputStream);
             return response;

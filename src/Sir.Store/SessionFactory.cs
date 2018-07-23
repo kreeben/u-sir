@@ -13,10 +13,10 @@ namespace Sir.Store
         private readonly VectorTree _index;
         private readonly string _dir;
         private readonly Stream _writableValueStream;
-        private readonly Stream _keyMapWriteStream;
+        private readonly Stream _writableKeyMapStream;
+        private readonly Stream _writableValueIndexStream;
         private readonly Stream _valueStream;
         private readonly Stream _valueIndexStream;
-        private readonly Stream _writableValueIndexStream;
 
         public bool IsDisposed { get; private set; }
 
@@ -32,7 +32,7 @@ namespace Sir.Store
                 _writableValueStream.Dispose();
                 _valueIndexStream.Dispose();
                 _writableValueIndexStream.Dispose();
-                _keyMapWriteStream.Dispose();
+                _writableKeyMapStream.Dispose();
                 _valueStream.Dispose();
 
                 IsDisposed = true;
@@ -49,7 +49,7 @@ namespace Sir.Store
             _writableValueStream = CreateAppendStream(Path.Combine(dir, "_.val"));
             _valueIndexStream = CreateReadWriteStream(Path.Combine(dir, "_.vix"));
             _writableValueIndexStream = CreateAppendStream(Path.Combine(dir, "_.vix"));
-            _keyMapWriteStream = new FileStream(Path.Combine(dir, "_.kmap"), FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            _writableKeyMapStream = new FileStream(Path.Combine(dir, "_.kmap"), FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
         }
 
         private static SortedList<ulong, uint> LoadKeyMap(string dir)
@@ -108,8 +108,8 @@ namespace Sir.Store
 
             var buf = BitConverter.GetBytes(keyHash);
 
-            _keyMapWriteStream.Write(buf, 0, sizeof(ulong));
-            _keyMapWriteStream.Flush();
+            _writableKeyMapStream.Write(buf, 0, sizeof(ulong));
+            _writableKeyMapStream.Flush();
         }
 
         public uint GetKey(ulong keyHash)
@@ -145,9 +145,9 @@ namespace Sir.Store
             return session;
         }
 
-        public Session CreateReadSession(ulong collectionId)
+        public ReadSession CreateReadSession(ulong collectionId)
         {
-            var session = new Session(_dir, collectionId, this)
+            var session = new ReadSession(_dir, collectionId, this)
             {
                 ValueStream = _valueStream,
                 KeyStream = CreateReadStream(string.Format("{0}.key", collectionId)),

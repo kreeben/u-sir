@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sir.Json
+namespace Sir
 {
     public class Model : IModel
     {

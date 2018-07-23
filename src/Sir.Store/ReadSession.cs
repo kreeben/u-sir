@@ -12,21 +12,37 @@ namespace Sir.Store
 
         public IEnumerable<IModel> Read(Query query)
         {
-            ulong keyHash = query.Term.Key.ToString().ToHash();
-            var ix = GetIndex(keyHash);
-            var match = ix.ClosestMatch(query.Term.Value.ToString());
             var docIx = new DocIndexReader(DocIndexStream);
             var docs = new DocReader(DocStream);
+            var keyIx = new ValueIndexReader(KeyIndexStream);
+            var valIx = new ValueIndexReader(KeyIndexStream);
+            var keyReader = new ValueReader(KeyStream);
+            var valReader = new ValueReader(ValueStream);
 
-            foreach(var docId in match.DocIds)
+            var keyHash = query.Term.Key.ToString().ToHash();
+            var ix = GetIndex(keyHash);
+            var match = ix.ClosestMatch(query.Term.Value.ToString());
+
+            foreach (var docId in match.DocIds)
             {
                 var docInfo = docIx.Read(docId);
                 var docMap = docs.Read(docInfo.offset, docInfo.length);
+                var keys = new IComparable[docMap.Count];
+                var vals = new IComparable[docMap.Count];
 
-                foreach(var kvp in docMap)
+                for (int i = 0; i < docMap.Count; i++)
                 {
+                    var kvp = docMap[i];
+                    var kInfo = keyIx.Read(kvp.keyId);
+                    var vInfo = valIx.Read(kvp.valId);
+                    var key = keyReader.Read(kInfo.offset, kInfo.len, kInfo.dataType);
+                    var val = valReader.Read(vInfo.offset, vInfo.len, vInfo.dataType);
 
+                    keys[i] = key;
+                    vals[i] = val;
                 }
+
+                yield return new Model(keys, vals);
             }
         }
     }
