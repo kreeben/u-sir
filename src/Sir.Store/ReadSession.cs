@@ -15,8 +15,19 @@ namespace Sir.Store
             ulong keyHash = query.Term.Key.ToString().ToHash();
             var ix = GetIndex(keyHash);
             var match = ix.ClosestMatch(query.Term.Value.ToString());
-            var docIndexReader = new DocIndexReader(DocIndexStream);
-            var docReader = new DocReader(DocStream);
+            var docIx = new DocIndexReader(DocIndexStream);
+            var docs = new DocReader(DocStream);
+
+            foreach(var docId in match.DocIds)
+            {
+                var docInfo = docIx.Read(docId);
+                var docMap = docs.Read(docInfo.offset, docInfo.length);
+
+                foreach(var kvp in docMap)
+                {
+
+                }
+            }
         }
     }
 }

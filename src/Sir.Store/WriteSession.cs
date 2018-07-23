@@ -26,7 +26,7 @@ namespace Sir.Store
             foreach (var model in data)
             {
                 var docId = docIx.GetNextDocId();
-                var docMapping = new List<(uint keyId, uint valId)>();
+                var docMap = new List<(uint keyId, uint valId)>();
 
                 for (int i = 0; i < model.Keys.Length; i++)
                 {
@@ -89,13 +89,13 @@ namespace Sir.Store
                         fieldIndex.Add((string)term.Value, valId, docId);
 
                         // store refs to key and value
-                        docMapping.Add((keyId, valId));
+                        docMap.Add((keyId, valId));
                     }
 
                     _dirty.Add(string.Format("{0}.{1}", CollectionId, keyId), fieldIndex);
                 }
 
-                var docMeta = docs.Append(docMapping);
+                var docMeta = docs.Append(docMap);
                 var confirmedDocId = docIx.Append(docMeta.offset, docMeta.length);
 
                 if (confirmedDocId != docId)
