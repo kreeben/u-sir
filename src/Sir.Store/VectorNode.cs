@@ -14,8 +14,10 @@ namespace Sir.Store
         private VectorNode _right;
         private VectorNode _left;
         private long _vecOffset;
-        private long _postingsOffset;
+        private HashSet<ulong> _docIds;
 
+        public long PostingsOffset { get; set; }
+        public int PostingsSize { get; set; }
         public double Angle { get; set; }
         public double Highscore { get; set; }
         public SortedList<char, double> TermVector { get; private set; }
@@ -40,7 +42,6 @@ namespace Sir.Store
         }
 
         public uint ValueId { get; set; }
-        public HashSet<ulong> DocIds { get; set; }
 
         public VectorNode() 
             : this('\0'.ToString()) { }
@@ -52,13 +53,13 @@ namespace Sir.Store
 
         public VectorNode(SortedList<char, double> wordVector)
         {
-            DocIds = new HashSet<ulong>();
+            _docIds = new HashSet<ulong>();
             TermVector = wordVector;
         }
 
         public void AddPosting(ulong docId)
         {
-            DocIds.Add(docId);
+            _docIds.Add(docId);
         }
 
         private IEnumerable<byte[]> ToStream()
@@ -84,17 +85,20 @@ namespace Sir.Store
 
             yield return BitConverter.GetBytes(Angle);
             yield return BitConverter.GetBytes(_vecOffset);
-            yield return BitConverter.GetBytes(_postingsOffset);
+            yield return BitConverter.GetBytes(PostingsOffset);
+            yield return BitConverter.GetBytes(PostingsSize);
+            yield return BitConverter.GetBytes(ValueId);
             yield return BitConverter.GetBytes(TermVector.Count);
             yield return terminator;
         }
 
         public void Serialize(Stream indexStream, Stream vectorStream, Stream postingsStream)
         {
-            _postingsOffset = postingsStream.Position;
+            PostingsOffset = postingsStream.Position;
+            PostingsSize = _docIds.Count * sizeof(ulong);
             _vecOffset = TermVector.Serialize(vectorStream);
 
-            foreach (var docId in DocIds)
+            foreach (var docId in _docIds)
             {
                 var posting = BitConverter.GetBytes(docId);
                 postingsStream.Write(posting, 0, sizeof(ulong));
@@ -117,22 +121,24 @@ namespace Sir.Store
 
         public static VectorNode Deserialize(Stream treeStream, Stream vectorStream)
         {
-            const int nodeSize = sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int) + sizeof(byte);
+            const int nodeSize = sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int) + sizeof(uint) + sizeof(int) + sizeof(byte);
             const int kvpSize = sizeof(char) + sizeof(double);
 
-            var nodeBuf = new byte[nodeSize];
-            var read = treeStream.Read(nodeBuf, 0, nodeBuf.Length);
+            var buf = new byte[nodeSize];
+            var read = treeStream.Read(buf, 0, buf.Length);
 
             if (read < nodeSize)
             {
                 throw new Exception("data is corrupt");
             }
             
-            var angle = BitConverter.ToDouble(nodeBuf, 0);
-            var vecOffset = BitConverter.ToInt64(nodeBuf, sizeof(double));
-            var postingsOffset = BitConverter.ToInt64(nodeBuf, sizeof(double) + sizeof(long));
-            var listCount = BitConverter.ToInt32(nodeBuf, sizeof(double) + sizeof(long) + sizeof(long));
-            var terminator = nodeBuf[nodeSize - 1];
+            var angle = BitConverter.ToDouble(buf, 0);
+            var vecOffset = BitConverter.ToInt64(buf, sizeof(double));
+            var postingsOffset = BitConverter.ToInt64(buf, sizeof(double) + sizeof(long));
+            var postingsSize = BitConverter.ToInt64(buf, sizeof(double) + sizeof(long) + sizeof(long));
+            var valueId = BitConverter.ToUInt32(buf, sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int) + sizeof(uint));
+            var listCount = BitConverter.ToInt32(buf, sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int));
+            var terminator = buf[nodeSize - 1];
             var vec = new SortedList<char, double>();
             var listBuf = new byte[listCount * kvpSize];
 
@@ -152,6 +158,7 @@ namespace Sir.Store
 
             var node = new VectorNode(vec);
             node.Angle = angle;
+            node.ValueId = valueId;
 
             if (terminator == 0)
             {
@@ -288,9 +295,9 @@ namespace Sir.Store
                 TermVector = TermVector.Add(node.TermVector);
             }
 
-            foreach(var id in node.DocIds)
+            foreach(var id in node._docIds)
             {
-                DocIds.Add(id);
+                _docIds.Add(id);
             }
         }
 

@@ -18,12 +18,14 @@ namespace Sir.Store
             var valIx = new ValueIndexReader(KeyIndexStream);
             var keyReader = new ValueReader(KeyStream);
             var valReader = new ValueReader(ValueStream);
+            var postingsReader = new PostingsReader(PostingsStream);
 
             var keyHash = query.Term.Key.ToString().ToHash();
             var ix = GetIndex(keyHash);
             var match = ix.ClosestMatch(query.Term.Value.ToString());
+            var docIds = postingsReader.Read(match.PostingsOffset, match.PostingsSize);
 
-            foreach (var docId in match.DocIds)
+            foreach (var docId in docIds)
             {
                 var docInfo = docIx.Read(docId);
                 var docMap = docs.Read(docInfo.offset, docInfo.length);
