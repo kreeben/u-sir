@@ -10,7 +10,7 @@ namespace Sir.CmdApp
         static void Main(string[] args)
         {
             var sessionFactory = new SessionFactory(Directory.GetCurrentDirectory());
-            var store = new Store.Store(sessionFactory, new Tokenizer());
+            var store = new Store.Writer(sessionFactory, new Tokenizer());
             var timer = new Stopwatch();
             string[] userInput = args.Length == 0 ? null : args;
             var methods = Inspector.GetMethods(typeof(App));

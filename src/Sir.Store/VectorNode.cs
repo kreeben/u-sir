@@ -104,7 +104,7 @@ namespace Sir.Store
                 postingsStream.Write(posting, 0, sizeof(ulong));
             }
 
-            foreach(var buf in ToStream())
+            foreach (var buf in ToStream())
             {
                 indexStream.Write(buf, 0, buf.Length);
             }
@@ -133,11 +133,11 @@ namespace Sir.Store
             }
             
             var angle = BitConverter.ToDouble(buf, 0);
-            var vecOffset = BitConverter.ToInt64(buf, sizeof(double));
-            var postingsOffset = BitConverter.ToInt64(buf, sizeof(double) + sizeof(long));
-            var postingsSize = BitConverter.ToInt64(buf, sizeof(double) + sizeof(long) + sizeof(long));
-            var valueId = BitConverter.ToUInt32(buf, sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int) + sizeof(uint));
-            var listCount = BitConverter.ToInt32(buf, sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int));
+            var vecOffset = BitConverter.ToInt64(buf,       sizeof(double));
+            var postingsOffset = BitConverter.ToInt64(buf,  sizeof(double) + sizeof(long));
+            var postingsSize = BitConverter.ToInt32(buf,    sizeof(double) + sizeof(long) + sizeof(long));
+            var valueId = BitConverter.ToUInt32(buf,        sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int));
+            var listCount = BitConverter.ToInt32(buf,       sizeof(double) + sizeof(long) + sizeof(long) + sizeof(int) + sizeof(uint));
             var terminator = buf[nodeSize - 1];
             var vec = new SortedList<char, double>();
             var listBuf = new byte[listCount * kvpSize];
@@ -159,6 +159,8 @@ namespace Sir.Store
             var node = new VectorNode(vec);
             node.Angle = angle;
             node.ValueId = valueId;
+            node.PostingsOffset = postingsOffset;
+            node.PostingsSize = postingsSize;
 
             if (terminator == 0)
             {

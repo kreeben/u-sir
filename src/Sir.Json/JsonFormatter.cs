@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sir
 {
@@ -15,23 +16,32 @@ namespace Sir
 
         public void Format(IEnumerable<IModel> data, Stream output)
         {
-            foreach (var item in data)
+            var list = data.ToList();
+
+            foreach (var item in list)
             {
-                var bytes = Serialize(item);
+                var jsonDoc = Convert(item);
+                var bytes = Serialize(jsonDoc);
+
                 output.Write(bytes, 0, bytes.Length);
             }
         }
 
-        private byte[] Serialize(IModel data)
+        private Dictionary<string, IComparable> Convert(IModel model)
         {
-            var dict = new Dictionary<string, IComparable>();
-            for (int i = 0; i < data.Keys.Length; i++)
+            var doc = new Dictionary<string, IComparable>();
+            for (int i = 0; i < model.Keys.Length; i++)
             {
-                var key = (string)data.Keys[i];
-                if (key != "_id")
-                    dict.Add(key, data.Values[i]);
+                var key = (string)model.Keys[i];
+                doc.Add(key, model.Values[i]);
+
             }
-            var json = JsonConvert.SerializeObject(dict, Formatting.None);
+            return doc;
+        }
+
+        private byte[] Serialize(Dictionary<string, IComparable> model)
+        {
+            var json = JsonConvert.SerializeObject(model, Formatting.None);
             return System.Text.Encoding.Unicode.GetBytes(json);
         }
     }

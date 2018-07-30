@@ -67,7 +67,7 @@ namespace Sir.HttpServer.Controllers
 
         [HttpGet("{*collectionId}")]
         [HttpPut("{*collectionId}")]
-        public HttpResponseMessage Get(string collectionId, string query)
+        public ObjectResult Get(string collectionId, string query)
         {
             //TODO: add pagination
 
@@ -88,18 +88,30 @@ namespace Sir.HttpServer.Controllers
 
             if (queryParser == null || modelBinder == null || reader == null)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.UnsupportedMediaType);
+                throw new NotSupportedException();
             }
 
             var parsedQuery = queryParser.Parse(query);
             parsedQuery.CollectionId = collectionId.ToHash();
 
-            var outputStream = new MemoryStream();
-            reader.Read(modelBinder, parsedQuery, outputStream);
+            var payload = reader.Read(parsedQuery);
+            return new ObjectResult(payload);
+            //var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            //response.Content = new ObjectResult(new object());
+            //var outputStream = new MemoryStream();
+            //reader.Render(modelBinder, parsedQuery, outputStream);
+            //outputStream.Position = 0;
 
-            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            response.Content = new StreamContent(outputStream);
-            return response;
+            //using (var r = new StreamReader(outputStream, System.Text.Encoding.Unicode, false, 4096, true))
+            //{
+            //    var str = r.ReadToEnd();
+            //    var size = outputStream.Position;
+            //    var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            //    response.Content = new StringContent(str);
+            //    response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            //    response.Content.Headers.ContentLength = size;
+            //    return response;
+            //}
         }
     }
 }

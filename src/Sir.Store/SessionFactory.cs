@@ -8,7 +8,6 @@ namespace Sir.Store
     public class SessionFactory : IDisposable
     {
         private readonly SortedList<ulong, uint> _keys;
-        private readonly IDictionary<string, Stream> _streams;
         private readonly object Sync = new object();
         private readonly VectorTree _index;
         private readonly string _dir;
@@ -18,31 +17,18 @@ namespace Sir.Store
         private readonly Stream _valueStream;
         private readonly Stream _valueIndexStream;
 
-        public bool IsDisposed { get; private set; }
-
         public void Dispose()
         {
-            if (!IsDisposed)
-            {
-                foreach (var s in _streams.ToList())
-                {
-                    s.Value.Dispose();
-                }
-
-                _writableValueStream.Dispose();
-                _valueIndexStream.Dispose();
-                _writableValueIndexStream.Dispose();
-                _writableKeyMapStream.Dispose();
-                _valueStream.Dispose();
-
-                IsDisposed = true;
-            }
+            _writableValueStream.Dispose();
+            _valueIndexStream.Dispose();
+            _writableValueIndexStream.Dispose();
+            _writableKeyMapStream.Dispose();
+            _valueStream.Dispose();
         }
 
         public SessionFactory(string dir)
         {
             _keys = LoadKeyMap(dir);
-            _streams = new SortedList<string, Stream>();
             _index = DeserializeTree(dir);
             _dir = dir;
             _valueStream = CreateReadWriteStream(Path.Combine(dir, "_.val"));
@@ -129,38 +115,36 @@ namespace Sir.Store
 
         public WriteSession CreateWriteSession(ulong collectionId)
         {
-            var session = new WriteSession(_dir, collectionId, this)
+            return new WriteSession(_dir, collectionId, this)
             {
                 ValueStream = _writableValueStream,
                 KeyStream = CreateAppendStream(string.Format("{0}.key", collectionId)),
                 DocStream = CreateAppendStream(string.Format("{0}.docs", collectionId)),
                 ValueIndexStream = _writableValueIndexStream,
                 KeyIndexStream = CreateAppendStream(string.Format("{0}.kix", collectionId)),
-                DocIndexStream = CreateReadWriteStream(string.Format("{0}.dix", collectionId)),
+                DocIndexStream = CreateAppendStream(string.Format("{0}.dix", collectionId)),
                 PostingsStream = CreateReadWriteStream(string.Format("{0}.pos", collectionId)),
-                VectorStream = CreateAppendStream(string.Format("{0}.vec", collectionId))
+                VectorStream = CreateAppendStream(string.Format("{0}.vec", collectionId)),
+                Index = GetIndex(collectionId)
             };
-
-            session.Index = GetIndex(collectionId);
-            return session;
         }
 
         public ReadSession CreateReadSession(ulong collectionId)
         {
-            var session = new ReadSession(_dir, collectionId, this)
+            var sess = new ReadSession(_dir, collectionId, this)
             {
                 ValueStream = _valueStream,
                 KeyStream = CreateReadStream(string.Format("{0}.key", collectionId)),
-                DocStream = CreateReadStream(string.Format("{0}.doc", collectionId)),
+                DocStream = CreateReadStream(string.Format("{0}.docs", collectionId)),
                 ValueIndexStream = _valueIndexStream,
-                KeyIndexStream = CreateAppendStream(string.Format("{0}.kix", collectionId)),
-                DocIndexStream = CreateAppendStream(string.Format("{0}.dix", collectionId)),
+                KeyIndexStream = CreateReadStream(string.Format("{0}.kix", collectionId)),
+                DocIndexStream = CreateReadStream(string.Format("{0}.dix", collectionId)),
                 PostingsStream = CreateReadStream(string.Format("{0}.pos", collectionId)),
-                VectorStream = CreateReadStream(string.Format("{0}.vec", collectionId))
+                VectorStream = CreateReadStream(string.Format("{0}.vec", collectionId)),
+                Index = GetIndex(collectionId)
             };
 
-            session.Index = GetIndex(collectionId);
-            return session;
+            return sess;
         }
 
         protected SortedList<uint, VectorNode> GetIndex(ulong collectionId)
@@ -170,19 +154,7 @@ namespace Sir.Store
 
         protected Stream CreateReadWriteStream(string fileName)
         {
-            Stream stream;
-            if (!_streams.TryGetValue(fileName, out stream))
-            {
-                lock (Sync)
-                {
-                    if (!_streams.TryGetValue(fileName, out stream))
-                    {
-                        stream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-                        _streams.Add(fileName, stream);
-                    }
-                }
-            }
-            return stream;
+            return new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
         }
 
         protected Stream CreateAppendStream(string fileName)
@@ -192,19 +164,7 @@ namespace Sir.Store
             //FileStream file = new FileStream(fileName, fileMode, fileAccess, fileShare, blockSize,
             //    FileFlagNoBuffering | FileOptions.WriteThrough | fileOptions);
 
-            Stream stream;
-            if (!_streams.TryGetValue(fileName, out stream))
-            {
-                lock (Sync)
-                {
-                    if (!_streams.TryGetValue(fileName, out stream))
-                    {
-                        stream = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
-                        _streams.Add(fileName, stream);
-                    }
-                }
-            }
-            return stream;
+            return new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
         }
 
         protected Stream CreateReadStream(string fileName)

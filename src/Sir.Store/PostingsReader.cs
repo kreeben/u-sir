@@ -30,6 +30,7 @@ namespace Sir.Store
             while (position < len)
             {
                 yield return BitConverter.ToUInt64(buf, position * sizeof(ulong));
+                position += sizeof(ulong);
             }
             
         }

@@ -96,12 +96,7 @@ namespace Sir.Store
                 }
 
                 var docMeta = docs.Append(docMap);
-                var confirmedDocId = docIx.Append(docMeta.offset, docMeta.length);
-
-                if (confirmedDocId != docId)
-                {
-                    throw new InvalidDataException();
-                }
+                docIx.Append(docMeta.offset, docMeta.length);
             }
         }
 
