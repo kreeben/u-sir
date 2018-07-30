@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Sir.Store
 {
@@ -34,24 +33,6 @@ namespace Sir.Store
                     {
                         yield return model;
                     }
-                }
-            }
-        }
-
-        public void Render(IModelFormatter modelFormatter, Query query, Stream output)
-        {
-            ulong keyHash = query.Term.Key.ToString().ToHash();
-            uint keyId;
-
-            if (_sessionFactory.TryGetKeyId(keyHash, out keyId))
-            {
-                query.Term.KeyId = keyId;
-
-                using (var session = _sessionFactory.CreateReadSession(query.CollectionId))
-                {
-                    var unformatted = session.Read(query);
-
-                    modelFormatter.Format(unformatted, output);
                 }
             }
         }

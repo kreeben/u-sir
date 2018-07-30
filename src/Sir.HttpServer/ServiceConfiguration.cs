@@ -58,10 +58,6 @@ namespace Sir.HttpServer
             {
                 plugins.Add(service.ContentType, service);
             }
-            foreach (var service in serviceProvider.GetServices<IModelFormatter>())
-            {
-                plugins.Add(service.ContentType, service);
-            }
             foreach (var service in serviceProvider.GetServices<IWriter>())
             {
                 plugins.Add(service.ContentType, service);

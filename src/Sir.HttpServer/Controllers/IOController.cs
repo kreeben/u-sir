@@ -83,10 +83,9 @@ namespace Sir.HttpServer.Controllers
             }
 
             var queryParser = _plugins.Get<IQueryParser>(contentType);
-            var modelBinder = _plugins.Get<IModelFormatter>(accepts);
-            var reader = _plugins.Get<IReader>(accepts);
+            var reader = _plugins.Get<IReader>();
 
-            if (queryParser == null || modelBinder == null || reader == null)
+            if (queryParser == null || reader == null)
             {
                 throw new NotSupportedException();
             }
@@ -96,22 +95,6 @@ namespace Sir.HttpServer.Controllers
 
             var payload = reader.Read(parsedQuery);
             return new ObjectResult(payload);
-            //var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            //response.Content = new ObjectResult(new object());
-            //var outputStream = new MemoryStream();
-            //reader.Render(modelBinder, parsedQuery, outputStream);
-            //outputStream.Position = 0;
-
-            //using (var r = new StreamReader(outputStream, System.Text.Encoding.Unicode, false, 4096, true))
-            //{
-            //    var str = r.ReadToEnd();
-            //    var size = outputStream.Position;
-            //    var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            //    response.Content = new StringContent(str);
-            //    response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            //    response.Content.Headers.ContentLength = size;
-            //    return response;
-            //}
         }
     }
 }
