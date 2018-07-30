@@ -36,18 +36,14 @@ namespace Sir.Store
                     var fieldIndex = GetIndex(keyHash);
                     var val = (IComparable)model[key];
                     var str = val as string;
-                    var terms = new List<Term>();
+                    var indexTokens = new List<Term>();
                     uint keyId, valId;
 
-                    if (str == null)
+                    if (str != null) //TODO: implement numeric index
                     {
-                        throw new NotImplementedException("Data type is not supported yet.");
-                    }
-                    else
-                    {
-                        foreach (var term in tokenizer.Tokenize(str))
+                        foreach (var token in tokenizer.Tokenize(str))
                         {
-                            terms.Add(new Term(keyStr, term));
+                            indexTokens.Add(new Term(keyStr, token));
                         }
                     }
 
@@ -69,9 +65,9 @@ namespace Sir.Store
                         keyId = SessionFactory.GetKey(keyHash);
                     }
 
-                    foreach (var term in terms)
+                    foreach (var token in indexTokens)
                     {
-                        var match = fieldIndex.ClosestMatch((string)term.Value);
+                        var match = fieldIndex.ClosestMatch((string)token.Value);
 
                         if (match.Highscore < VectorNode.IdenticalAngle)
                         {
@@ -86,14 +82,18 @@ namespace Sir.Store
                             valId = match.ValueId;
                         }
 
-                        // add term and posting to index
-                        fieldIndex.Add((string)term.Value, valId, docId);
+                        // add posting to index
+                        fieldIndex.Add((string)token.Value, valId, docId);
 
-                        // store refs to key and value
+                        // store refs to keys and values
                         docMap.Add((keyId, valId));
                     }
 
-                    _dirty.Add(string.Format("{0}.{1}", CollectionId, keyId), fieldIndex);
+                    var indexName = string.Format("{0}.{1}", CollectionId, keyId);
+                    if (!_dirty.ContainsKey(indexName))
+                    {
+                        _dirty.Add(indexName, fieldIndex);
+                    }
                 }
 
                 var docMeta = docs.Append(docMap);

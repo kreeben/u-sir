@@ -15,7 +15,7 @@ namespace Sir.Store
 
         public ulong GetNextDocId()
         {
-            return (ulong)_stream.Position / (ulong)_blockSize;
+            return _stream.Position == 0 ? 0 : (ulong)_stream.Position / (ulong)_blockSize;
         }
 
         public void Append(long offset, int len)

@@ -44,7 +44,7 @@ namespace Sir.HttpServer.Controllers
                 {
                     await Task.Run(() =>
                     {
-                        writer.Append(collectionId, payload);
+                        writer.Write(collectionId, payload);
                     });
                 }
                 catch (Exception ew)

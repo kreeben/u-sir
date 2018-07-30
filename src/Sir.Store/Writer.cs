@@ -18,7 +18,7 @@ namespace Sir.Store
             _writeQueue = new ProducerConsumerQueue<WriteTransaction>(Commit);
         }
 
-        public void Append(string collectionId, IEnumerable<IDictionary> data)
+        public void Write(string collectionId, IEnumerable<IDictionary> data)
         {
             using (var tx = new WriteTransaction(collectionId.ToHash(), data))
             {
