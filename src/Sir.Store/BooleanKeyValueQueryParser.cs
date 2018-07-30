@@ -11,7 +11,7 @@
 
         public Query Parse(string query)
         {
-            var tokens = query.Split(new[] { ' ', ':' });
+            var tokens = query.Split(new[] { ':' });
             if (tokens.Length > 1)
             {
                 var key = tokens[0];

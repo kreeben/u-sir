@@ -9,7 +9,7 @@ namespace Sir.Store
     {
         public const double IdenticalAngle = 0.99d;
         public const double TrueAngle = 0.9d;
-        public const double FalseAngle = 0.5;
+        public const double FalseAngle = 0.1;
 
         private VectorNode _right;
         private VectorNode _left;
