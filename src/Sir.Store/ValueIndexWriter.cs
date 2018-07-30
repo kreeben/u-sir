@@ -20,7 +20,7 @@ namespace Sir.Store
 
             _stream.Write(BitConverter.GetBytes(offset), 0, sizeof(long));
             _stream.Write(BitConverter.GetBytes(len), 0, sizeof(int));
-            _stream.Write(BitConverter.GetBytes(dataType), 0, sizeof(byte));
+            _stream.Write(new byte[] { dataType }, 0, sizeof(byte));
 
             return index;
         }

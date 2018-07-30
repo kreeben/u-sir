@@ -16,7 +16,7 @@ namespace Sir.Store
             var docIx = new DocIndexReader(DocIndexStream);
             var docs = new DocReader(DocStream);
             var keyIx = new ValueIndexReader(KeyIndexStream);
-            var valIx = new ValueIndexReader(KeyIndexStream);
+            var valIx = new ValueIndexReader(ValueIndexStream);
             var keyReader = new ValueReader(KeyStream);
             var valReader = new ValueReader(ValueStream);
             var postingsReader = new PostingsReader(PostingsStream);

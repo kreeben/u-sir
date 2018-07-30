@@ -29,7 +29,6 @@ namespace Sir.Store
                 var docId = docIx.GetNextDocId();
                 var docMap = new List<(uint keyId, uint valId)>();
 
-                //for (int i = 0; i < model.Count; i++)
                 foreach(var key in model.Keys)
                 {
                     var keyStr = key.ToString();
