@@ -29,12 +29,12 @@ namespace Sir.Store
                 var docId = docIx.GetNextDocId();
                 var docMap = new List<(uint keyId, uint valId)>();
 
-                foreach(var key in model.Keys)
+                foreach (var key in model.Keys)
                 {
                     var keyStr = key.ToString();
                     var keyHash = keyStr.ToHash();
                     var fieldIndex = GetIndex(keyHash);
-                    var val = model[key];
+                    var val = (IComparable)model[key];
                     var str = val as string;
                     var terms = new List<Term>();
                     uint keyId, valId;
@@ -78,7 +78,7 @@ namespace Sir.Store
                             // We have a new unique value!
 
                             // store value
-                            var valInfo = vals.Append(term.Value);
+                            var valInfo = vals.Append(val);
                             valId = valIx.Append(valInfo.offset, valInfo.len, valInfo.dataType);
                         }
                         else
