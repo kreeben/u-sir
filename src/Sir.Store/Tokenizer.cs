@@ -18,9 +18,4 @@ namespace Sir.Store
                 _delimiters, StringSplitOptions.RemoveEmptyEntries);
         }
     }
-
-    public interface ITokenizer
-    {
-        string[] Tokenize(string text);
-    }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sir.Store
@@ -10,7 +11,7 @@ namespace Sir.Store
         {
         }
 
-        public IEnumerable<IModel> Read(Query query)
+        public IEnumerable<IDictionary> Read(Query query)
         {
             var docIx = new DocIndexReader(DocIndexStream);
             var docs = new DocReader(DocStream);
@@ -29,8 +30,7 @@ namespace Sir.Store
             {
                 var docInfo = docIx.Read(docId);
                 var docMap = docs.Read(docInfo.offset, docInfo.length);
-                var keys = new IComparable[docMap.Count];
-                var vals = new IComparable[docMap.Count];
+                var doc = new Dictionary<IComparable, IComparable>();
 
                 for (int i = 0; i < docMap.Count; i++)
                 {
@@ -40,11 +40,10 @@ namespace Sir.Store
                     var key = keyReader.Read(kInfo.offset, kInfo.len, kInfo.dataType);
                     var val = valReader.Read(vInfo.offset, vInfo.len, vInfo.dataType);
 
-                    keys[i] = key;
-                    vals[i] = val;
+                    doc[key] = val;
                 }
 
-                yield return new Model(keys, vals);
+                yield return doc;
             }
         }
     }

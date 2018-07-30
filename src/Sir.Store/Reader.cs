@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace Sir.Store
 {
@@ -20,7 +20,7 @@ namespace Sir.Store
         {
         }
 
-        public IEnumerable<IModel> Read(Query query)
+        public IEnumerable<IDictionary> Read(Query query)
         {
             ulong keyHash = query.Term.Key.ToString().ToHash();
             uint keyId;

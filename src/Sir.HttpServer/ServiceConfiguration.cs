@@ -45,7 +45,6 @@ namespace Sir.HttpServer
                     }
                 }
             }
-
             services.Add(new ServiceDescriptor(typeof(PluginsCollection), new PluginsCollection()));
 
             var serviceProvider = services.BuildServiceProvider();
@@ -54,10 +53,6 @@ namespace Sir.HttpServer
             // Create one instances each of all plugins and register them with the PluginCollection,
             // so that they can be fetched at runtime by Content-Type and System.Type.
 
-            foreach (var service in serviceProvider.GetServices<IModelBinder>())
-            {
-                plugins.Add(service.ContentType, service);
-            }
             foreach (var service in serviceProvider.GetServices<IWriter>())
             {
                 plugins.Add(service.ContentType, service);

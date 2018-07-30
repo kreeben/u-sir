@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,30 +19,23 @@ namespace Sir.HttpServer.Controllers
         }
 
         [HttpPost("{*collectionId}")]
-        public async Task<IActionResult> Post(string collectionId)
+        public async Task<IActionResult> Post(string collectionId, [FromBody]IEnumerable<IDictionary> payload)
         {
-            if (string.IsNullOrWhiteSpace(collectionId))
+            if (collectionId == null)
             {
-                throw new ArgumentException("message", nameof(collectionId));
+                throw new ArgumentNullException(nameof(collectionId));
             }
 
-            var binder = _plugins.Get<IModelBinder>(Request.ContentType);
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(collectionId));
+            }
+
             var writers = _plugins.All<IWriter>(Request.ContentType).ToList();
 
-            if (binder == null || writers == null || writers.Count == 0)
+            if (writers == null || writers.Count == 0)
             {
                 return StatusCode(415); // Media type not supported
-            }
-
-            IList<IModel> data;
-
-            try
-            {
-                data = binder.Parse(Request.Body);
-            }
-            catch (Exception wtf)
-            {
-                throw wtf;
             }
 
             foreach (var writer in writers)
@@ -51,7 +44,7 @@ namespace Sir.HttpServer.Controllers
                 {
                     await Task.Run(() =>
                     {
-                        writer.Append(collectionId, data);
+                        writer.Append(collectionId, payload);
                     });
                 }
                 catch (Exception ew)

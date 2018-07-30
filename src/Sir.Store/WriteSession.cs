@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -14,7 +15,7 @@ namespace Sir.Store
             _dirty = new Dictionary<string, VectorNode>();
         }
 
-        public void Write(IEnumerable<IModel> data, ITokenizer tokenizer)
+        public void Write(IEnumerable<IDictionary> data, ITokenizer tokenizer)
         {
             var vals = new ValueWriter(ValueStream);
             var keys = new ValueWriter(KeyStream);
@@ -28,12 +29,13 @@ namespace Sir.Store
                 var docId = docIx.GetNextDocId();
                 var docMap = new List<(uint keyId, uint valId)>();
 
-                for (int i = 0; i < model.Keys.Length; i++)
+                //for (int i = 0; i < model.Count; i++)
+                foreach(var key in model.Keys)
                 {
-                    var key = model.Keys[i];
-                    var keyHash = key.ToHash();
+                    var keyStr = key.ToString();
+                    var keyHash = keyStr.ToHash();
                     var fieldIndex = GetIndex(keyHash);
-                    var val = model.Values[i];
+                    var val = model[key];
                     var str = val as string;
                     var terms = new List<Term>();
                     uint keyId, valId;
@@ -46,7 +48,7 @@ namespace Sir.Store
                     {
                         foreach (var term in tokenizer.Tokenize(str))
                         {
-                            terms.Add(new Term(key, term));
+                            terms.Add(new Term(keyStr, term));
                         }
                     }
 
@@ -55,7 +57,7 @@ namespace Sir.Store
                         // We have a new key!
 
                         // store key
-                        var keyInfo = keys.Append(key);
+                        var keyInfo = keys.Append(keyStr);
                         keyId = keyIx.Append(keyInfo.offset, keyInfo.len, keyInfo.dataType);
                         SessionFactory.AddKey(keyHash, keyId);
 

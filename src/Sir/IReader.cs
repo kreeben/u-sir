@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace Sir
 {
     public interface IReader : IPlugin
     {
-        IEnumerable<IModel> Read(Query query);
+        IEnumerable<IDictionary> Read(Query query);
     }
 }
